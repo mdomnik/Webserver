@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:13:53 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/28 15:18:51 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/28 16:15:33 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,20 +34,20 @@ void Server::CreateSocket()
 {
 	_socketFD = socket(AF_INET, SOCK_STREAM, 0); // get TCP socket
 	if (_socketFD < 0)
-		throw std::runtime_error("Failed to create socket");
+		throw std::runtime_error("Server | Failed to create socket");
 	
 	int optionFlags = 1;
 	if (setsockopt(_socketFD, SOL_SOCKET, SO_REUSEADDR, &optionFlags, sizeof(optionFlags)) < 0) // set socket options that allow reuse of addr/port
 	{
 		close(_socketFD);
-		throw std::runtime_error("Failed to set socket options");
+		throw std::runtime_error("Server | Failed to set socket options");
 	}
 
 	int flags = fcntl(_socketFD, F_GETFL, 0);
 	if (flags < 0 || fcntl(_socketFD, F_SETFL, flags | O_NONBLOCK) < 0) // set socket to non-blocking
 	{
 		close(_socketFD);
-		throw std::runtime_error("Failed to set socket to non-blocking");
+		throw std::runtime_error("Server | Failed to set socket to non-blocking");
 	}
 }
 
@@ -62,19 +62,19 @@ void Server::BindandListen()
 	if (_serverAddr.sin_addr.s_addr == INADDR_NONE) // if invalid IP address
 	{
 		close(_socketFD);
-		throw std::runtime_error("Invalid IP address: " + _config.host);
+		throw std::runtime_error("Server | Invalid IP address: " + _config.host);
 	}
 
 	if (bind(_socketFD, (struct sockaddr*)&_serverAddr, sizeof(_serverAddr)) < 0) // bind socket
 	{
 		close(_socketFD);
-		throw std::runtime_error("Failed to bind socket to address");
+		throw std::runtime_error("Server | Failed to bind socket to address");
 	}
 
 	if (listen(_socketFD, SOMAXCONN) < 0) // start listening on socket
 	{
 		close(_socketFD);
-		throw std::runtime_error("Failed to listen on socket");
+		throw std::runtime_error("Server | Failed to listen on socket");
 	}
 }
 
@@ -85,7 +85,7 @@ void Server::Start()
 {
 	CreateSocket();
 	BindandListen();
-	std::cout << "Server started! Listening on " << _config.host << ":" << _config.port << " !" << std::endl;
+	std::cout << "Server | Server started! Listening on " << _config.host << ":" << _config.port << " !" << std::endl;
 }
 
 // Stops the server and closes all connections
@@ -100,7 +100,7 @@ void Server::Stop()
 	{
 		close(_socketFD);
 		_socketFD = -1;
-		std::cout << "Server stopped running; All Clients disconnected." << std::endl;
+		std::cout << "Server | Server stopped running; All Clients disconnected." << std::endl;
 	}
 }
 
@@ -118,9 +118,34 @@ const ServerConfig& Server::GetServerConfig() const
 
 // ==== Client Handling ====
 
+// Accepts a new client connection
 int Server::acceptClient()
 {
-	struct
+	// Accept a new client connection
+	struct sockaddr_in address;
+	socklen_t len = sizeof(address);
+	int fd = accept(_socketFD, (struct sockaddr*)&address, &len);
+
+	if (fd < 0)
+	{
+		if (errno != EWOULDBLOCK && errno != EAGAIN) // no pending connections (non-blocking)
+			std::cerr << "Server | Error accepting client: " << std::strerror(errno) << std::endl;
+		return (-1);
+	}
+	
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) // set client socket to non-blocking
+	{
+		close(fd);
+		std::cerr << "Server | Failed to set client socket to non-blocking" << std::endl;
+		return (-1);
+	}
+
+	_clientSockets.push_back(fd); // client socket added to the tracked list
+	
+	std::cout << "Server | Accepted new client with file descriptor (" << fd << ")" << std::endl;
+	
+	return (fd);
 }
 
 

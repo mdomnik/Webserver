@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:13:26 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/28 15:09:07 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/28 15:26:52 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <cerrno>
 
 #include "../../Config/inc/ServerConfig.hpp"
 
