@@ -3,16 +3,16 @@
 #                                                         :::      ::::::::    #
 #    makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+         #
+#    By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/10/28 13:34:08 by mdomnik           #+#    #+#              #
-#    Updated: 2025/10/28 14:02:12 by mdomnik          ###   ########.fr        #
+#    Updated: 2025/10/29 22:38:17 by nmandakh         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # ================= Webserv Config Parser ================= #
 
-NAME     = ../test_config
+NAME     = test_config
 CXX      = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -g
 
@@ -22,7 +22,7 @@ TEST_DIR = test
 OBJ_DIR  = obj
 
 SRCS = $(SRC_DIR)/ConfigParser.cpp \
-       $(TEST_DIR)/test_config.cpp
+       $(TEST_DIR)/base_test.cpp
 
 OBJS = $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
 INCS = -I$(INC_DIR)
