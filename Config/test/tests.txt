@@ -2,3 +2,5 @@
 ./test/single_server.conf
 ./test/single_server_incorrect_bracket.conf
 ./test/single_server_tabbed.conf
+./test/single_server_multiple_ports.conf
+./test/single_server_multiple_locations.conf
