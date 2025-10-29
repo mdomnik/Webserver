@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:26:14 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/28 13:55:16 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/29 19:48:53 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <sys/stat.h>
+
+#define MAX_CLIENT_BODY_SIZE 10485760
 
 class ConfigParser
 {
@@ -50,7 +52,7 @@ class ConfigParser
 		void ParseLocationParts(LocationConfig& loc, const std::string& token);
 
 		// Check for completion
-		void ValidateConfig(const ServerConfig& server);
+		void ValidateConfig(ServerConfig& server);
 
 	public:
 		// Constructor

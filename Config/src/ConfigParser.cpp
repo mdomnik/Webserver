@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/28 15:18:05 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/29 20:48:02 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,12 +28,9 @@ void ConfigParser::GetContent()
 	if (fd < 0)
 		throw std::runtime_error("config file could not be opened: " + _filePath);
 
-	struct stat fileStat;
-	if (fstat(fd, &fileStat) < 0)
-	{
-		close(fd);
-		throw std::runtime_error("could not get stats from config file: " + _filePath);
-	}
+	 struct stat fileStat;
+	if (stat(_filePath.c_str(), &fileStat) < 0)
+		throw std::runtime_error("Failed to open config file: " + _filePath);
 	
 	_fileContent.clear();
 
@@ -150,20 +147,19 @@ ServerConfig ConfigParser::ParseServer()
 // Parse helper, tons of if-else to parse server parts
 void ConfigParser::ParseServerParts(ServerConfig& server, const std::string& token)
 {
-	if (token == "listen")
+	if(token == "listen")
 	{
-		std::string ipaddress = Next();
-		size_t delim = ipaddress.find(':');
-		if (delim != std::string::npos)
+		std::string addressIP = Next();
+		size_t delim = addressIP.find(':');
+		if(delim != std::string::npos)
 		{
-			server.host = ipaddress.substr(0, delim);
-			server.port = std::atoi(ipaddress.substr(delim + 1).c_str());
+			server.listens.push_back(std::make_pair(addressIP.substr(0,delim), std::atoi(addressIP.substr(delim + 1).c_str())));
 		}
 		else
-		server.port = std::atoi(ipaddress.c_str());
+			server.listens.push_back(std::make_pair("localhost", std::atoi(addressIP.c_str())));
 		Expect(";");
 	}
-	else if (token == "client_max_body_size")
+	else if (token == "client_max_bady_size")
 	{
 		server.clientMaxBodySize = std::atoi(Next().c_str());
 		Expect(";");
@@ -187,8 +183,7 @@ void ConfigParser::ParseServerParts(ServerConfig& server, const std::string& tok
 		server.locations.push_back(loc);
 	}
 	else
-	throw std::runtime_error("Unexpected token: " + token);
-	
+		throw std::runtime_error("Unexpected token: " + token);
 }
 
 // Parses a location block and returns a LocationConfig object
@@ -211,7 +206,21 @@ LocationConfig ConfigParser::ParseLocation()
 // Parse helper, tons of if-else to parse location parts
 void ConfigParser::ParseLocationParts(LocationConfig& location, const std::string& token)
 {
-	if (token == "root")
+	if (token == "methods")
+	{
+		while (Peek() != ";")
+			location.methods.push_back(Next());
+		Expect(";");
+	}
+	else if (token == "return")
+	{
+		std::string pageName = Next();
+		int code = std::atoi(pageName.c_str());
+		pageName = Next();
+		location.redirection[code] = pageName;
+		Expect(";");
+	}
+	else if (token == "root")
 	{
 		location.root = Next();
 		Expect(";");
@@ -220,11 +229,11 @@ void ConfigParser::ParseLocationParts(LocationConfig& location, const std::strin
 	{
 		std::string value = Next();
 		if (value == "on")
-		location.autoIndex = true;
+			location.autoIndex = true;
 		else if (value == "off")
-		location.autoIndex = false;
+			location.autoIndex = false;
 		else
-		throw std::runtime_error("Wrong autoIndex value: " + value);
+			throw std::runtime_error("Wrong autoIndex value: " + value);
 		Expect(";");
 	}
 	else if (token == "index")
@@ -232,10 +241,15 @@ void ConfigParser::ParseLocationParts(LocationConfig& location, const std::strin
 		location.index = Next();
 		Expect(";");
 	}
-	else if (token == "methods")
+	else if (token == "upload_enable")
 	{
-		while (Peek() != ";")
-		location.methods.push_back(Next());
+		std::string value = Next();
+		if (value == "on")
+			location.uploadEnable = true;
+		else if (value == "off")
+			location.uploadEnable = false;
+		else
+			throw std::runtime_error("Wrong upload_enable value: " + value);
 		Expect(";");
 	}
 	else if (token == "upload_store")
@@ -243,61 +257,96 @@ void ConfigParser::ParseLocationParts(LocationConfig& location, const std::strin
 		location.uploadStore = Next();
 		Expect(";");
 	}
-	else if (token == "return")
-	{
-		location.redirection = Next();
-		Expect(";");
-	}
 	else if (token == "cgi_extension")
 	{
-		location.cgiExtention = Next();
+		location.cgiExtension = Next();
+		Expect(";");
+	}
+	else if (token == "cgi_path")
+	{
+		location.cgiPath = Next();
 		Expect(";");
 	}
 	else
 	throw std::runtime_error("Unexpected token: " + token);
 }
 
-// ==== Validation Method ====
+// ==== Validation Method and Helpers ====
+
+// Validates if an IP address is correctly formatted
+static bool IsValidIP(std::string &address)
+{
+	if (address == "localhost")
+		address = "127.0.0.1";
+	std::vector<int> numbers;
+	size_t pos = 0;
+	size_t last = 0;
+	// Split by '.'
+	while ((pos = address.find('.', last)) != std::string::npos)
+	{
+		std::string temp = address.substr(last, pos - last); // extract segment
+		int num = std::atoi(temp.c_str());
+		if (num < 0 || num > 255) // check range
+			return false;
+		numbers.push_back(num);
+		last = pos + 1;
+	}
+	std::string temp = address.substr(last);
+	int num = std::atoi(temp.c_str());
+	if (num < 0 || num > 255)
+		return false;
+	numbers.push_back(num);
+	return (numbers.size() == 4); // must have exactly 4 segments
+}
 
 // Validates the parsed ServerConfig for correctness
-void ConfigParser::ValidateConfig(const ServerConfig& server)
+void ConfigParser::ValidateConfig(ServerConfig& server)
 {
-	if (server.port < 0 || server.port > 65535)
-		throw std::runtime_error("Invalid port number");
-	if (server.clientMaxBodySize == 0)
-		throw std::runtime_error("client_max_body_size must be greater than 0");
+	for (size_t i = 0; i < server.listens.size(); ++i)
+	{
+		std::string &ip = server.listens[i].first;
+		if (!IsValidIP(ip))
+			throw (std::runtime_error("Invalid IP Address: " + ip));
+		int port = server.listens[i].second;
+		if (port < 0 || port > 65535)
+			throw std::runtime_error("Invalid port number");
+	}
+	if (server.clientMaxBodySize > MAX_CLIENT_BODY_SIZE || server.clientMaxBodySize <= 0)
+		throw std::runtime_error("Invalid client max body size");
+	for (std::map<int, std::string>::iterator it = server.errorPages.begin(); it != server.errorPages.end(); it++)
+	{
+		if (it->first < 400 || it->first > 599)
+			throw std::runtime_error("Error code found outside scope"); 
+	}
 	if (server.locations.empty())
 		throw std::runtime_error("At least one location block is required");
-
 	for (size_t i = 0; i < server.locations.size(); ++i)
 	{
 		const LocationConfig& loc = server.locations[i];
-		if (loc.path.empty())
-			throw std::runtime_error("Location path cannot be empty");
-		if (loc.root.empty())
-			throw std::runtime_error("Location root cannot be empty for path: " + loc.path);
-		if (!loc.redirection.empty() && !loc.cgiExtention.empty())
-			throw std::runtime_error("Location cannot have both redirection and cgi_extension set for path: " + loc.path);
-		
 		std::set<std::string> validMethods;
 		validMethods.insert("GET");
 		validMethods.insert("POST");
 		validMethods.insert("DELETE");
-
+	
 		for (size_t j = 0; j < loc.methods.size(); ++j)
 		{
 			if (validMethods.find(loc.methods[j]) == validMethods.end())
 				throw std::runtime_error("Invalid method " + loc.methods[j] + " in location: " + loc.path);
 		}
-
-		if (loc.autoIndex && !loc.index.empty())
+		if (loc.path.empty())
+			throw std::runtime_error("Location path cannot be empty");
+		if (loc.root.empty())
+			throw std::runtime_error("Location root cannot be empty for path: " + loc.path);
+		if (!loc.redirection.empty() && !loc.cgiExtension.empty())
+			throw std::runtime_error("Location cannot have both redirection and cgi_extension set for path: " + loc.path);
+				if (loc.autoIndex && !loc.index.empty())
 			std::cerr << "Warning: both autoindex and index set for location: " << loc.path << std::endl;
 		
-		if (!loc.cgiExtention.empty())
-			if (loc.cgiExtention[0] != '.')
-				throw std::runtime_error("CGI extension must start with a dot in location: " + loc.path);
+		if (!loc.cgiExtension.empty())
+			if (loc.cgiExtension[0] != '.')
+				throw std::runtime_error("CGI extension must start with a dot in location: " + loc.path);	
 	}
-}	
+}
 
 // ==== Public Parse Method ====
 std::vector<ServerConfig> ConfigParser::parse()
