@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 14:43:54 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/29 14:48:51 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -264,7 +264,7 @@ ParseStatus HTTPRequest::ParseHeaders()
 
 	// check if there is content length header and validate it
 	size_t ContentLength = 0;
-	ParseStatus lengthStatus = validateContentLength(ContentLength);
+	ParseStatus lengthStatus = ValidateContentLength(ContentLength);
 	if (lengthStatus != Success)
 	{
 		_state = ErrorState;
@@ -277,3 +277,32 @@ ParseStatus HTTPRequest::ParseHeaders()
 	
 	return (Success);
 }
+
+// Parses the Body
+ParseStatus HTTPRequest::ParseBody()
+{
+	// Determine expected content length
+	size_t contentLength = 0;
+	if (ValidateContentLength(contentLength) != Success)
+	{
+		_state = ErrorState;
+		return (BadRequest);
+	}
+
+	if (_buffer.size() < contentLength) //if body not fully received
+		return (Incomplete);
+	
+	if (contentLength > _maxBodySize) //if body too large
+	{
+		_errorMessage = "Body size exceeds maximum allowed";
+		_state = ErrorState;
+		return (BadRequest);
+	}
+
+	_body.assign(_buffer, 0, contentLength); //extract body
+	_buffer.erase(0, contentLength); //remove body from buffer
+
+	return (Success);
+}
+
+// Validates the Content-Length header
