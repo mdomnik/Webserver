@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:13:53 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/28 16:15:33 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/29 12:41:00 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,24 +127,12 @@ int Server::acceptClient()
 	int fd = accept(_socketFD, (struct sockaddr*)&address, &len);
 
 	if (fd < 0)
-	{
-		if (errno != EWOULDBLOCK && errno != EAGAIN) // no pending connections (non-blocking)
-			std::cerr << "Server | Error accepting client: " << std::strerror(errno) << std::endl;
 		return (-1);
-	}
-	
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) // set client socket to non-blocking
-	{
-		close(fd);
-		std::cerr << "Server | Failed to set client socket to non-blocking" << std::endl;
-		return (-1);
-	}
 
-	_clientSockets.push_back(fd); // client socket added to the tracked list
-	
-	std::cout << "Server | Accepted new client with file descriptor (" << fd << ")" << std::endl;
-	
+	_clientSockets.push_back(fd);
+
+	std::cout << "Server | New client connected with fd: " << fd << std::endl;
+
 	return (fd);
 }
 

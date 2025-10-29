@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/28 16:34:02 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/29 12:43:49 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,11 @@ void ServerManager::InitServers(const std::vector<ServerConfig>& configs)
 {
 	for (size_t i = 0; i < configs.size(); ++i)
 	{
-		Server server(configs[i]);
-		server.Start();
-		_servers.push_back(server);
+		_servers.push_back(Server(configs[i]));
+	}
+	for (size_t i = 0; i < _servers.size(); ++i)
+	{
+		_servers[i].Start();
 	}
 }
 
@@ -58,7 +60,7 @@ void ServerManager::InitEpoll()
 void ServerManager::SetNonBlocking(int fd)
 {
 	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) < -0) // set fd to non-blocking
+	if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) // set fd to non-blocking
 	{
 		close (fd);
 		throw std::runtime_error("Server Manager | failed to set the fd to non-blocking");
@@ -90,27 +92,16 @@ void ServerManager::AddListenSocketsToEpoll()
 }
 
 // Handles new client connections for a given server
-void ServerManager::HandleNewConnections(int listening, Server &server)
+void ServerManager::HandleNewConnections(Server &server)
 {
 	// Accept all pending connections
 	while (true)
 	{
-		// Accept a new client connection
-		struct sockaddr_in clientAddress;
-		socklen_t lengthOfAddress = sizeof(clientAddress);
-		int client_fd = accept(listening, (struct sockaddr*)&clientAddress, &lengthOfAddress);
+		int client_fd = server.acceptClient();
 		
 		// Check for errors
 		if (client_fd < 0)
-		{
-			if (errno == EWOULDBLOCK || errno == EAGAIN) // no more pending connections
-				break;
-			else // other error
-			{
-				std::cerr << "Server Manager | problem with accept(): " << std::strerror(errno) << std::endl;
-				break;
-			}
-		}
+			break;
 
 		// Set client socket to non-blocking
 		SetNonBlocking(client_fd);
@@ -129,13 +120,10 @@ void ServerManager::HandleNewConnections(int listening, Server &server)
 		{
 			close(client_fd);
 			_clientToServer.erase(client_fd);
-			std::cerr << "Server Manager | failed to add client socket to epoll: " << std::strerror(errno) << std::endl;
 			continue;
 		}
 
-		// Log the accepted client
 		std::cout << "Server Manager | Accepted new client with fd: " << client_fd << std::endl;
-	
 	}
 }
 
@@ -205,7 +193,7 @@ void ServerManager::RunLoop()
 				if (fileDescriptor == _servers[j].GetSocketFD()) // if listening socket then handle new connections
 				{
 					isListening = true;
-					HandleNewConnections(fileDescriptor, _servers[j]);
+					HandleNewConnections(_servers[j]);
 					break;
 				}
 			}
@@ -217,10 +205,11 @@ void ServerManager::RunLoop()
 	ShutdownServers(); //interrupted, shutdown servers
 }
 
+// Shuts down all servers and cleans up resources
 void ServerManager::ShutdownServers()
 {
 	std::map<int, Server*>::iterator it = _clientToServer.begin();
-	while (it != _clientToServer.end())
+	while (it != _clientToServer.end()) // close all client connections
 	{
 		int client_fd = it->first;
 		close(client_fd);
@@ -228,5 +217,16 @@ void ServerManager::ShutdownServers()
 	}
 	_clientToServer.clear();
 
-	
+	if (_epollFD != -1) // close epoll fd
+	{
+		close(_epollFD);
+		_epollFD = -1;
+	}
+
+	for (size_t i = 0; i < _servers.size(); ++i) // stop all servers
+	{
+		_servers[i].Stop();
+	}
+
+	std::cout << "Server Manager | All servers shut down" << std::endl;
 }

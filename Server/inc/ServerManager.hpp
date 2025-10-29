@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:08:58 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/28 15:53:33 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/29 12:41:33 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ class ServerManager
 		// event handling methods
 		void SetNonBlocking(int fd);
 		void AddListenSocketsToEpoll();
-		void HandleNewConnections(int serverFD, Server &server);
+		void HandleNewConnections(Server &server);
 		void HandleClientActivity(int clientFD);
 		void CloseClient(int clientFD);
 

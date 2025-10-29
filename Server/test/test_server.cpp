@@ -6,30 +6,30 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:24:59 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/28 15:25:01 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/29 12:15:58 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../Config/inc/ConfigParser.hpp"
-#include "../inc/Server.hpp"
+#include "../inc/ServerManager.hpp"
 #include <iostream>
 
 int main() {
-	try {
-		ConfigParser parser("../Config/test/test.conf");
-		std::vector<ServerConfig> servers = parser.parse();
+    try {
+        // Use your existing config file
+        ConfigParser parser("../Config/test/test.conf");
+        std::vector<ServerConfig> configs = parser.parse();
 
-		Server s(servers[0]);
-		s.Start();
+        // (Optional) call ValidateServer(configs[i]) if you have it.
+        for (size_t i = 0; i < configs.size(); ++i) {
+            // ValidateServer(configs[i]);
+        }
 
-		std::cout << "Press Enter to accept clients (CTRL+C to quit)" << std::endl;
-		std::cin.get();
+        ServerManager mgr(configs);
+        mgr.RunLoop(); // blocks here
 
-		while (true)
-			s.acceptClient();
-
-	} catch (const std::exception &e) {
-		std::cerr << "Error: " << e.what() << std::endl;
-	}
-	return 0;
+    } catch (const std::exception &e) {
+        std::cerr << "Fatal: " << e.what() << std::endl;
+    }
+    return 0;
 }
