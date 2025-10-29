@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/28 15:18:05 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/29 23:35:15 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/ConfigParser.hpp"
 
 // ==== Constructor ====
-ConfigParser::ConfigParser(const std::string& filePath) : _filePath(filePath), _index(0)
+ConfigParser::ConfigParser(const std::string &filePath) : _filePath(filePath), _index(0)
 {
 	GetContent();
 	TokenizeFile();
@@ -34,7 +34,7 @@ void ConfigParser::GetContent()
 		close(fd);
 		throw std::runtime_error("could not get stats from config file: " + _filePath);
 	}
-	
+
 	_fileContent.clear();
 
 	char buffer[5000];
@@ -56,9 +56,9 @@ void ConfigParser::GetContent()
 // Tokenizes the _fileContent into _tokens vector
 void ConfigParser::TokenizeFile()
 {
-	std::string buffer; // buffer for building tokens
+	std::string buffer;	 // buffer for building tokens
 	int isInComment = 0; // checking if a line is a comment
-	
+
 	for (size_t i = 0; i < _fileContent.size(); ++i) // loop through each character
 	{
 		char c = _fileContent[i];
@@ -108,8 +108,8 @@ void ConfigParser::TokenizeFile()
 // Shows the next value in _tokens without advancing the index
 std::string ConfigParser::Peek() const
 {
-	if (_index >= _tokens.size()) //if at end of tokens
-	throw std::runtime_error("unexpected end of configuration file");
+	if (_index >= _tokens.size()) // if at end of tokens
+		throw std::runtime_error("unexpected end of configuration file");
 	return _tokens[_index];
 }
 
@@ -117,28 +117,40 @@ std::string ConfigParser::Peek() const
 std::string ConfigParser::Next()
 {
 	if (_index >= _tokens.size())
-	throw std::runtime_error("unexpected end of configuration file");
+		throw std::runtime_error("unexpected end of configuration file");
 	return _tokens[_index++];
 }
 
 // Confirms that the next token matches the expected value
-void ConfigParser::Expect(const std::string& expected)
+void ConfigParser::Expect(const std::string &expected)
 {
 	std::string token = Next();
 	if (token != expected)
-	throw std::runtime_error("expected the token: " + expected + " got: " + token);
+		throw std::runtime_error("expected the token: " + expected + " got: " + token);
 }
 
 // ==== Block Parsing Methods ====
 
+void initializeServerConfig(ServerConfig *serv) {
+	serv->host = "";
+	serv->port = 0;
+	serv->serverName = "";
+	serv->clientMaxBodySize = 1048576;
+	serv->errorPages.clear();
+	serv->locations.clear();
+}
 // Parses a server block and returns a ServerConfig object
 ServerConfig ConfigParser::ParseServer()
 {
+	// Values need to be initialized to default values to avoid warnings!
+	// ServerConfig serv = initializeServerConfig();
 	ServerConfig serv;
+	initializeServerConfig(&serv);
+
 	Expect("server");
 	Expect("{");
-	
-	while(Peek() != "}")
+
+	while (Peek() != "}")
 	{
 		std::string token = Next();
 		ParseServerParts(serv, token);
@@ -148,7 +160,8 @@ ServerConfig ConfigParser::ParseServer()
 }
 
 // Parse helper, tons of if-else to parse server parts
-void ConfigParser::ParseServerParts(ServerConfig& server, const std::string& token)
+	// Uninitialized values stem here
+void ConfigParser::ParseServerParts(ServerConfig &server, const std::string &token)
 {
 	if (token == "listen")
 	{
@@ -160,7 +173,7 @@ void ConfigParser::ParseServerParts(ServerConfig& server, const std::string& tok
 			server.port = std::atoi(ipaddress.substr(delim + 1).c_str());
 		}
 		else
-		server.port = std::atoi(ipaddress.c_str());
+			server.port = std::atoi(ipaddress.c_str());
 		Expect(";");
 	}
 	else if (token == "client_max_body_size")
@@ -187,18 +200,29 @@ void ConfigParser::ParseServerParts(ServerConfig& server, const std::string& tok
 		server.locations.push_back(loc);
 	}
 	else
-	throw std::runtime_error("Unexpected token: " + token);
-	
+		throw std::runtime_error("Unexpected token: " + token);
+}
+
+void initializeLocationConfig(LocationConfig *loc)
+{
+	loc->autoIndex = false;
+	loc->index = "";
+	loc->root = "";
+	loc->path = "";
+	loc->uploadStore = "";
+	loc->redirection = "";
+	loc->cgiExtention = "";
+	loc->methods.clear();
 }
 
 // Parses a location block and returns a LocationConfig object
 LocationConfig ConfigParser::ParseLocation()
 {
 	LocationConfig loc;
-	
+	initializeLocationConfig(&loc);
 	loc.path = Next();
 	Expect("{");
-	
+
 	while (Peek() != "}")
 	{
 		std::string token = Next();
@@ -209,7 +233,7 @@ LocationConfig ConfigParser::ParseLocation()
 }
 
 // Parse helper, tons of if-else to parse location parts
-void ConfigParser::ParseLocationParts(LocationConfig& location, const std::string& token)
+void ConfigParser::ParseLocationParts(LocationConfig &location, const std::string &token)
 {
 	if (token == "root")
 	{
@@ -220,11 +244,11 @@ void ConfigParser::ParseLocationParts(LocationConfig& location, const std::strin
 	{
 		std::string value = Next();
 		if (value == "on")
-		location.autoIndex = true;
+			location.autoIndex = true;
 		else if (value == "off")
-		location.autoIndex = false;
+			location.autoIndex = false;
 		else
-		throw std::runtime_error("Wrong autoIndex value: " + value);
+			throw std::runtime_error("Wrong autoIndex value: " + value);
 		Expect(";");
 	}
 	else if (token == "index")
@@ -235,7 +259,7 @@ void ConfigParser::ParseLocationParts(LocationConfig& location, const std::strin
 	else if (token == "methods")
 	{
 		while (Peek() != ";")
-		location.methods.push_back(Next());
+			location.methods.push_back(Next());
 		Expect(";");
 	}
 	else if (token == "upload_store")
@@ -254,13 +278,13 @@ void ConfigParser::ParseLocationParts(LocationConfig& location, const std::strin
 		Expect(";");
 	}
 	else
-	throw std::runtime_error("Unexpected token: " + token);
+		throw std::runtime_error("Unexpected token: " + token);
 }
 
 // ==== Validation Method ====
 
 // Validates the parsed ServerConfig for correctness
-void ConfigParser::ValidateConfig(const ServerConfig& server)
+void ConfigParser::ValidateConfig(const ServerConfig &server)
 {
 	if (server.port < 0 || server.port > 65535)
 		throw std::runtime_error("Invalid port number");
@@ -271,14 +295,14 @@ void ConfigParser::ValidateConfig(const ServerConfig& server)
 
 	for (size_t i = 0; i < server.locations.size(); ++i)
 	{
-		const LocationConfig& loc = server.locations[i];
+		const LocationConfig &loc = server.locations[i];
 		if (loc.path.empty())
 			throw std::runtime_error("Location path cannot be empty");
 		if (loc.root.empty())
 			throw std::runtime_error("Location root cannot be empty for path: " + loc.path);
 		if (!loc.redirection.empty() && !loc.cgiExtention.empty())
 			throw std::runtime_error("Location cannot have both redirection and cgi_extension set for path: " + loc.path);
-		
+
 		std::set<std::string> validMethods;
 		validMethods.insert("GET");
 		validMethods.insert("POST");
@@ -292,12 +316,12 @@ void ConfigParser::ValidateConfig(const ServerConfig& server)
 
 		if (loc.autoIndex && !loc.index.empty())
 			std::cerr << "Warning: both autoindex and index set for location: " << loc.path << std::endl;
-		
+
 		if (!loc.cgiExtention.empty())
 			if (loc.cgiExtention[0] != '.')
 				throw std::runtime_error("CGI extension must start with a dot in location: " + loc.path);
 	}
-}	
+}
 
 // ==== Public Parse Method ====
 std::vector<ServerConfig> ConfigParser::parse()
@@ -313,7 +337,7 @@ std::vector<ServerConfig> ConfigParser::parse()
 		else
 			throw std::runtime_error("expected the token: server got: " + token);
 	}
-	for (size_t i = 0; i < servers.size(); ++i)
+	for (size_t i = 0; i < servers.size(); i++)
 		ValidateConfig(servers[i]);
 	return (servers);
 }
