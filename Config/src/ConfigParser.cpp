@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 23:35:15 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/10/29 23:36:56 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,9 +132,9 @@ void ConfigParser::Expect(const std::string &expected)
 // ==== Block Parsing Methods ====
 
 void initializeServerConfig(ServerConfig *serv) {
-	serv->host = "";
-	serv->port = 0;
-	serv->serverName = "";
+	serv->host = "0.0.0.0";
+	serv->port = 8080;
+	serv->serverName = "Default";
 	serv->clientMaxBodySize = 1048576;
 	serv->errorPages.clear();
 	serv->locations.clear();
