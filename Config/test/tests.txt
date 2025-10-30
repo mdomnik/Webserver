@@ -1,2 +1,9 @@
-./test/test.conf
-./test/base_invalid.conf
+./test/multi_server_config.conf
+./test_configs/base_test.conf
+./test_configs/listen_test.conf
+./test_configs/listen_test_invalid.conf
+./test_configs/listen_test_invalid_duplicate.conf
+./test_configs/route_test.conf
+./test_configs/route_test_invalid.conf
+./test_configs/method_test.conf
+./test_configs/method_test_invalid.conf
