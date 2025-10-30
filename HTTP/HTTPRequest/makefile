@@ -5,44 +5,28 @@
 #                                                     +:+ +:+         +:+      #
 #    By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/10/30 13:36:41 by mdomnik           #+#    #+#              #
-#    Updated: 2025/10/30 14:01:14 by mdomnik          ###   ########.fr        #
+#    Created: 2025/10/30 13:11:26 by mdomnik           #+#    #+#              #
+#    Updated: 2025/10/30 13:11:28 by mdomnik          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-# ================= Webserv - Server Module ================= #
-NAME = test_integration
-CXX      = c++
+NAME = test_http
+CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -g
 
-SRC_DIR  = src
-INC_DIR  = inc
+SRC_DIR = src
+INC_DIR = inc
 TEST_DIR = test
-OBJ_DIR  = obj
+OBJ_DIR = obj
 
-# ==== External Module Paths ==== #
-CONFIG_DIR = ../Config
-HTTPREQ_DIR = ../HTTP/HTTPRequest
-HTTPRES_DIR = ../HTTP/HTTPResponse
-
-# ==== Source Files ==== #
 SRCS = \
-	$(SRC_DIR)/Server.cpp \
-	$(SRC_DIR)/ServerManager.cpp \
-	$(TEST_DIR)/test_integration.cpp \
-	../Config/src/ConfigParser.cpp \
-	../Config/src/ServerConfig.cpp \
-	../HTTP/HTTPRequest/src/HTTPRequest.cpp \
-	../HTTP/HTTPRequest/src/HTTPRequestUtils.cpp
+	$(SRC_DIR)/HTTPRequest.cpp \
+	$(SRC_DIR)/HTTPRequestUtils.cpp \
+	$(TEST_DIR)/test_http_request.cpp
 
 OBJS = $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
+INCS = -I$(INC_DIR)
 
-INCS = \
-	-I$(INC_DIR) \
-	-I$(CONFIG_DIR)/inc \
-	-I$(HTTPREQ_DIR)/inc
-
-# ==== Build Rules ==== #
 all: $(NAME)
 
 $(NAME): $(OBJS)

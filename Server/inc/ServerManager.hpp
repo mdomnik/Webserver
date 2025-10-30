@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:08:58 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 12:41:33 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/30 13:56:25 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <unistd.h>
 
 #include "../../Config/inc/ServerConfig.hpp"
+#include "../../HTTP/HTTPRequest/inc/HTTPRequest.hpp"
 #include "Server.hpp"
 
 #define MAX_EVENTS 64 // Maximum number of poll events
@@ -31,7 +32,8 @@ class ServerManager
 		int					_epollFD; // epoll file descriptor
 		std::vector<Server>	_servers; // list of managed servers
 		std::map<int, Server*> _clientToServer; // map client fds to their servers
-		
+		std::map<int, HTTPRequest> _clientParsers; // map client fds to their HTTP request parsers
+
 		// initialization methods
 		void InitServers(const std::vector<ServerConfig>& serverConfigs);
 		void InitEpoll();
@@ -39,7 +41,7 @@ class ServerManager
 		// event handling methods
 		void SetNonBlocking(int fd);
 		void AddListenSocketsToEpoll();
-		void HandleNewConnections(Server &server);
+		void HandleNewConnections(int listening, Server &server);
 		void HandleClientActivity(int clientFD);
 		void CloseClient(int clientFD);
 

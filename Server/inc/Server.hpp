@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:13:26 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 12:30:36 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/30 14:16:43 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,15 +33,13 @@
 class Server
 {
 	private:
-		int		_socketFD;
-		struct sockaddr_in	_serverAddr;
-		std::vector<int>	_clientSockets;
-		ServerConfig		_config;
+		std::vector<int>				_socketFDs;
+		std::vector<struct sockaddr_in>	_serverAddrs;
+		std::vector<int>				_clientSockets;
+		ServerConfig					_config;
 
 		// Server setup methods
-		void CreateSocket();
-		void BindandListen();
-
+		int CreateSocket();
 	public:
 		// Constructor and Destructor
 		Server(const ServerConfig& config);
@@ -52,11 +50,11 @@ class Server
 		void Stop();
 		
 		// Getters
-		int GetSocketFD() const;
+		const std::vector<int>& GetSocketFDs() const;
 		const ServerConfig& GetServerConfig() const;
 
 		// Client handling
-		int acceptClient();
+		int acceptClient(int socketFD);
 };
 
 #endif

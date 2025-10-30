@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:13:53 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 12:41:00 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/30 14:16:39 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,67 +15,46 @@
 // ==== Contructor and Destructor ====
 
 // Constructor
-Server::Server(const ServerConfig& config) : _socketFD(-1), _config(config)
+Server::Server(const ServerConfig& config) : _config(config)
 {
-	std::memset(&_serverAddr, 0, sizeof(_serverAddr));
-	_clientSockets.reserve(100); // reserve space for 100 clients
+	_socketFDs.clear();
+	_serverAddrs.clear();
+	_clientSockets.clear();
 }
 
 // Destructor
 Server::~Server()
 {
-	Stop();
+	for (size_t i = 0; i < _socketFDs.size(); ++i)
+		close(_socketFDs[i]);
+	for (size_t i = 0; i < _clientSockets.size(); ++i)
+		close(_clientSockets[i]);
 }
 
 // ==== Private Server Operations ====
 
 // Creates the server socket
-void Server::CreateSocket()
+int Server::CreateSocket()
 {
-	_socketFD = socket(AF_INET, SOCK_STREAM, 0); // get TCP socket
-	if (_socketFD < 0)
+	int socketFD = socket(AF_INET, SOCK_STREAM, 0); // get TCP socket
+	if (socketFD < 0)
 		throw std::runtime_error("Server | Failed to create socket");
 	
 	int optionFlags = 1;
-	if (setsockopt(_socketFD, SOL_SOCKET, SO_REUSEADDR, &optionFlags, sizeof(optionFlags)) < 0) // set socket options that allow reuse of addr/port
+	if (setsockopt(socketFD, SOL_SOCKET, SO_REUSEADDR, &optionFlags, sizeof(optionFlags)) < 0) // set socket options that allow reuse of addr/port
 	{
-		close(_socketFD);
+		close(socketFD);
 		throw std::runtime_error("Server | Failed to set socket options");
 	}
 
-	int flags = fcntl(_socketFD, F_GETFL, 0);
-	if (flags < 0 || fcntl(_socketFD, F_SETFL, flags | O_NONBLOCK) < 0) // set socket to non-blocking
+	int flags = fcntl(socketFD, F_GETFL, 0);
+	if (flags < 0 || fcntl(socketFD, F_SETFL, flags | O_NONBLOCK) < 0) // set socket to non-blocking
 	{
-		close(_socketFD);
+		close(socketFD);
 		throw std::runtime_error("Server | Failed to set socket to non-blocking");
 	}
-}
 
-// Binds and listens on the server socket
-void Server::BindandListen()
-{
-	// Bind the socket to the specified host and port
-	_serverAddr.sin_family = AF_INET;
-	_serverAddr.sin_port = htons(_config.port);
-	_serverAddr.sin_addr.s_addr = inet_addr(_config.host.c_str());
-
-	if (_serverAddr.sin_addr.s_addr == INADDR_NONE) // if invalid IP address
-	{
-		close(_socketFD);
-		throw std::runtime_error("Server | Invalid IP address: " + _config.host);
-	}
-
-	if (bind(_socketFD, (struct sockaddr*)&_serverAddr, sizeof(_serverAddr)) < 0) // bind socket
-	{
-		close(_socketFD);
-		throw std::runtime_error("Server | Failed to bind socket to address");
-	}
-
-	if (listen(_socketFD, SOMAXCONN) < 0) // start listening on socket
-	{
-		close(_socketFD);
-		throw std::runtime_error("Server | Failed to listen on socket");
-	}
+	return (socketFD);
 }
 
 // ==== Public Server Operations ====
@@ -83,9 +62,55 @@ void Server::BindandListen()
 // Starts the server and begins listening for connections
 void Server::Start()
 {
-	CreateSocket();
-	BindandListen();
-	std::cout << "Server | Server started! Listening on " << _config.host << ":" << _config.port << " !" << std::endl;
+	if (_config.listens.empty())
+		throw std::runtime_error("Server | No listen addresses configured");
+	for (size_t i = 0; i < _config.listens.size(); ++i)
+	{
+		std::string host = _config.listens[i].first;
+		int port = _config.listens[i].second;
+
+		struct sockaddr_in serverAddr;
+		std::memset(&serverAddr, 0, sizeof(serverAddr));
+		serverAddr.sin_family = AF_INET;
+		serverAddr.sin_port = htons(port);
+		
+		if (host == "localhost")
+			serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+		else if (host == "any" || host == "0.0.0.0")
+			serverAddr.sin_addr.s_addr = INADDR_ANY;
+		else
+		{
+			if (inet_aton(host.c_str(), &serverAddr.sin_addr) == 0)
+			{
+				std::cerr << "Server | Invalid IP address: " << host << std::endl;
+				continue;
+			}
+		}
+
+		int socketFD = CreateSocket();
+
+		// Try to bind and listen
+		if (bind(socketFD, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0)
+		{
+			std::cerr << "Server | Failed to bind" << std::endl;
+			close(socketFD);
+			continue;
+		}
+		if (listen(socketFD, SOMAXCONN) < 0)
+		{
+			std::cerr << "Server | Failed to listen" << std::endl;
+			close(socketFD);
+			continue;
+		}
+
+		_socketFDs.push_back(socketFD);
+		_serverAddrs.push_back(serverAddr);
+
+		std::cout << "Server | Listening on " << host << ":" << port << std::endl;
+	}
+
+	if (_socketFDs.empty())
+		throw std::runtime_error("Server | No valid listen sockets available to start server");
 }
 
 // Stops the server and closes all connections
@@ -93,22 +118,20 @@ void Server::Stop()
 {
 	for (size_t i = 0; i < _clientSockets.size(); ++i)
 		close(_clientSockets[i]);
-	
 	_clientSockets.clear();
 
-	if (_socketFD != -1)
-	{
-		close(_socketFD);
-		_socketFD = -1;
-		std::cout << "Server | Server stopped running; All Clients disconnected." << std::endl;
-	}
+	for (size_t i = 0; i < _socketFDs.size(); ++i)
+		close(_socketFDs[i]);
+	_socketFDs.clear();
+	
+	std::cout << "Server | Stopped and closed all connections." << std::endl;
 }
 
 // ==== Getters ====
 
-int Server::GetSocketFD() const
+const std::vector<int>& Server::GetSocketFDs() const
 {
-	return (_socketFD);
+	return (_socketFDs);
 }
 
 const ServerConfig& Server::GetServerConfig() const
@@ -119,16 +142,21 @@ const ServerConfig& Server::GetServerConfig() const
 // ==== Client Handling ====
 
 // Accepts a new client connection
-int Server::acceptClient()
+int Server::acceptClient(int socketFD)
 {
 	// Accept a new client connection
 	struct sockaddr_in address;
 	socklen_t len = sizeof(address);
-	int fd = accept(_socketFD, (struct sockaddr*)&address, &len);
-
+	int fd = accept(socketFD, (struct sockaddr*)&address, &len);
 	if (fd < 0)
 		return (-1);
 
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		close(fd);
+		return (-1);
+	}
 	_clientSockets.push_back(fd);
 
 	std::cout << "Server | New client connected with fd: " << fd << std::endl;

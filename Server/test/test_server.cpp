@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:24:59 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 12:15:58 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/30 13:35:21 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,22 +14,23 @@
 #include "../inc/ServerManager.hpp"
 #include <iostream>
 
-int main() {
-    try {
-        // Use your existing config file
+int main()
+{
+    try
+    {
         ConfigParser parser("../Config/test/test.conf");
         std::vector<ServerConfig> configs = parser.parse();
 
-        // (Optional) call ValidateServer(configs[i]) if you have it.
-        for (size_t i = 0; i < configs.size(); ++i) {
-            // ValidateServer(configs[i]);
-        }
+        std::cout << "Config parsed successfully: " << configs.size() << " server(s) loaded." << std::endl;
 
-        ServerManager mgr(configs);
-        mgr.RunLoop(); // blocks here
+        ServerManager manager(configs);
+        manager.RunLoop(); // Blocking event loop
 
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e)
+    {
         std::cerr << "Fatal: " << e.what() << std::endl;
     }
+
     return 0;
 }

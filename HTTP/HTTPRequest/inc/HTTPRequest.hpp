@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 12:58:50 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 14:46:43 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/30 12:23:35 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,7 @@ class HTTPRequest
 		ParseStatus ParseBody();
 
 		// content length validation
-		ParseStatus ValidateContentLength(size_t contentLength);
+		ParseStatus ValidateContentLength(size_t &contentLength) const;
 };
 
 #endif

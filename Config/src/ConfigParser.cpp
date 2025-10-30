@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 20:48:02 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/30 14:10:59 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,7 +159,7 @@ void ConfigParser::ParseServerParts(ServerConfig& server, const std::string& tok
 			server.listens.push_back(std::make_pair("localhost", std::atoi(addressIP.c_str())));
 		Expect(";");
 	}
-	else if (token == "client_max_bady_size")
+	else if (token == "client_max_body_size")
 	{
 		server.clientMaxBodySize = std::atoi(Next().c_str());
 		Expect(";");

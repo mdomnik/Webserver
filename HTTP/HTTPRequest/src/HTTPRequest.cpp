@@ -6,20 +6,12 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 14:48:51 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/30 13:14:24 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HTTPRequest.hpp"
-
-// Forward declarations for helper functions
-static std::string TrimHTTPLine(const std::string& str);
-static std::vector<std::string> HTTPSplitTokens(const std::string line);
-static int HttpStringToSizet(const std::string &s, size_t &out);
-static int HTTPValidateMethod(const std::string &method);
-static int HTTPValidatePath(const std::string &path);
-static int HTTPValidateVersion(const std::string &version);
-
+#include "../inc/HTTPRequestUtils.hpp"
 
 // ==== Constructor ====
 HTTPRequest::HTTPRequest() : _method(), _path(), _httpVersion(), _headers(), _body(), _state(RequestLineState), _buffer(), _errorMessage(), _maxBodySize(DEFAULT_MAX_BODY_SIZE) {}
@@ -306,3 +298,21 @@ ParseStatus HTTPRequest::ParseBody()
 }
 
 // Validates the Content-Length header
+ParseStatus HTTPRequest::ValidateContentLength(size_t &length) const
+{
+	std::map<std::string, std::string>::const_iterator it = _headers.find("content-length");
+	if (it == _headers.end())
+	{
+		length = 0;
+		return (Success);
+	}
+
+	size_t convert = 0;
+	if (!HttpStringToSizet(it->second, convert))
+		return (BadRequest);
+	if (convert > _maxBodySize)
+		return (BadRequest);
+
+	length = convert;
+	return (Success);
+}
