@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:14:38 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/28 11:35:08 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/29 20:51:57 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,28 +20,37 @@
 // Configuration for a location block
 struct LocationConfig
 {
-	std::string path; // path to location from root
-	std::string root; // root specification
+    std::vector<std::string> methods; //list of accepted HTTP methods GET, POST, DELETE
+    
+	std::string path; //refers to the configuration path
+    std::map<int, std::string> redirection; // HTTP redirect rule (return 301 http://example.com/)
+    std::string root; //directory where the requested files are located for that route
 
-	bool autoIndex; // automatic directory listing for missing index
-	std::string index; // path to index page
+    bool autoIndex; //enable or disable automatic directory listing
+    std::string index; //default file, front page directory
 
-	std::vector<std::string> methods; // Methods allowed at locatioj
+    bool uploadEnable; //bool whether a user can upload files
+    std::string uploadStore; //directory path, where uploaded files are saved
 
-	std::string uploadStore; // directory for uploaded files
-	std::string redirection; // redirects to different page
-	std::string cgiExtention; // type od executable CGI extention
+    std::string cgiExtension; //end of file that trigger type of cgi execution
+    std::string cgiPath; //path to cgi interpreter
+	
+	LocationConfig();
 };
 
 // Configuration of a server block
 struct ServerConfig
 {
-	std::string host; // no address
-	int port; // default port
-	std::string serverName; // default name
-	size_t clientMaxBodySize; // 1mb
-	std::map<int, std::string> errorPages; // map of pages to err codes
-	std::vector<LocationConfig> locations; // location blocks
+    std::string serverName; //Default name of the server
+    
+	std::vector<std::pair<std::string, int> > listens; //ip:port pairs on which we can access the server
+    size_t clientMaxBodySize; // Maximum amount of connections per socket
+    
+	std::map<int, std::string> errorPages; // direction to error pages
+    
+	std::vector<LocationConfig> locations; //vector container storing all the locations from this server
+
+	ServerConfig();
 };
 
 #endif

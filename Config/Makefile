@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    makefile                                           :+:      :+:    :+:    #
+#    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2025/10/28 13:34:08 by mdomnik           #+#    #+#              #
-#    Updated: 2025/10/29 22:38:17 by nmandakh         ###   ########.fr        #
+#    Created: 2025/10/29 17:13:26 by mdomnik           #+#    #+#              #
+#    Updated: 2025/10/30 13:44:42 by nmandakh         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,8 @@ TEST_DIR = test
 OBJ_DIR  = obj
 
 SRCS = $(SRC_DIR)/ConfigParser.cpp \
-       $(TEST_DIR)/base_test.cpp
+       $(SRC_DIR)/ServerConfig.cpp \
+       $(TEST_DIR)/test_config.cpp
 
 OBJS = $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
 INCS = -I$(INC_DIR)

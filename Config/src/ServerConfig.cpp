@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:31:18 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 23:28:30 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/10/30 13:46:57 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,17 @@
 // ==== Constructors ====
 
 // Default constructor for location blocks
-LocationConfig::LocationConfig() : autoIndex(false), index("") {};
+LocationConfig::LocationConfig() : autoIndex(false), uploadEnable(false)
+{
+    path = "/";
+    root = "";
+    index = "index.html";
+    uploadStore = "/tmp";
+}
 
 // Default constructor for server blocks
-ServerConfig::ServerConfig() : host("0.0.0.0"), port(8080), serverName("Default"), clientMaxBodySize(1048576) {};
+ServerConfig::ServerConfig() : serverName("Default") ,clientMaxBodySize(10485760)
+{
+	listens.push_back(std::make_pair("0.0.0.0", 8080));
+	errorPages[404] = "/errors/404.html";
+}
