@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 13:28:20 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 15:58:00 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/10/30 16:00:02 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,7 @@ int	explicitConfig(std::string configPath) {
 		if (configPath.find("invalid") != std::string::npos) return 0;
         return 1;
     }
+	if (configPath.find("invalid") != std::string::npos) return 1;
 	return 0;
 }
 

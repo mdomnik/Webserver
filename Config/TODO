@@ -1,1 +1,2 @@
-* Implement multiple ports
+* Duplicate location blocks should be rejected (Can be ignored as of now)
+* Duplicate route/ip address should be rejected (Will cause a crash or hang upon socket binding unless it is handled with a guard!)
