@@ -1,0 +1,62 @@
+:root {
+	--color-box: hsla(180, 1%, 74%, 0.267);
+	--color-box-border: hsla(61, 45%, 60%, 0.137);
+	--color-text: hsl(60, 70%, 55%);
+}
+
+html {
+	font-family: "Roboto", sans-serif;
+	font-weight: bolder;
+	font-optical-sizing: auto;
+	font-style: normal;
+	font-variation-settings: "wdth" 100;
+}
+
+a:visited {
+	color: hsl(236, 35%, 19%);
+}
+
+a:hover {
+	color: hsl(60, 100%, 73%);
+}
+
+.Head {
+	display: flex;
+	padding: 15px;
+	background-color: hsla(180, 1%, 74%, 0.062);
+	border-style: none;
+	border-color: var(--color-box-border);
+	border-radius: 0.5vmax;
+}
+
+.Body {
+	background-image: url(../yuyu.jpg);
+	background-size: cover;
+	min-height: 100vh;
+	margin: 0;
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	flex-direction: column;
+}
+
+.Form {
+	background-color: hsla(180, 1%, 74%, 0.267);
+	padding: 25px;
+}
+
+.Foot {
+	background-color: hsla(180, 1%, 74%, 0.062);
+	color: hsl(0, 0%, 100%);
+	padding-top: 5px;
+	padding-bottom: 2px;
+	padding-left: 5px;
+}
+
+.boox {
+	background-color: hsla(180, 1%, 74%, 0.267);
+	text-decoration: none;
+	color: var(--color-text);
+	padding: 10px;
+	margin: 5px;
+	border-radius: 0.25vmax;
+}
