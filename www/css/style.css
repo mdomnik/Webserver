@@ -1,7 +1,9 @@
 :root {
 	--color-box: hsla(180, 1%, 74%, 0.267);
 	--color-box-border: hsla(61, 45%, 60%, 0.137);
-	--color-text: hsl(60, 70%, 55%);
+	--color-text: hsl(270, 26%, 11%);
+	--color-hover: hsl(270, 46%, 26%);
+	--color-visited: hsl(267, 9%, 24%);
 }
 
 html {
@@ -13,11 +15,11 @@ html {
 }
 
 a:visited {
-	color: hsl(236, 35%, 19%);
+	color: var(--color-visited);
 }
 
 a:hover {
-	color: hsl(60, 100%, 73%);
+	color: var(--color-hover);
 }
 
 .Head {
@@ -31,16 +33,35 @@ a:hover {
 
 .Body {
 	background-image: url(../yuyu.jpg);
-	background-size: cover;
+	background-size: 100vmax;
 	min-height: 100vh;
-	margin: 0;
+	margin: 15px;
 	display: grid;
 	grid-template-rows: auto 1fr auto;
 	flex-direction: column;
 }
 
+.MainPage {
+	display:flex;
+	background-color: var(--color-box);
+	backdrop-filter: blur(3px);
+	border-radius: 0.25vmax;
+	color: var(--color-text);
+	padding: 2%;
+	margin: 2%;
+
+}
+
+.Inner {
+	flex-grow: 1;
+	color: var(--color-text);
+	text-align: center;
+	padding-top: 20px;
+}
+
 .Form {
 	background-color: hsla(180, 1%, 74%, 0.267);
+	border-radius: 0.25vmax;
 	padding: 25px;
 }
 
@@ -53,7 +74,7 @@ a:hover {
 }
 
 .boox {
-	background-color: hsla(180, 1%, 74%, 0.267);
+	background-color: var(--color-box);
 	text-decoration: none;
 	color: var(--color-text);
 	padding: 10px;
