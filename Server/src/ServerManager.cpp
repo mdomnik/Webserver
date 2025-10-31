@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 12:43:49 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/31 16:42:52 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ ServerManager::ServerManager(const std::vector<ServerConfig> &configs) : _epollF
 	InitServers(configs);
 	if(_servers.empty())
 		throw std::runtime_error("Server Manager | No servers found");
-		
 	InitEpoll();
 	AddListenSocketsToEpoll();
 
@@ -36,13 +35,11 @@ ServerManager::~ServerManager()
 // Initializes servers based on config file
 void ServerManager::InitServers(const std::vector<ServerConfig>& configs)
 {
+	_servers.reserve(configs.size());
 	for (size_t i = 0; i < configs.size(); ++i)
 	{
 		_servers.push_back(Server(configs[i]));
-	}
-	for (size_t i = 0; i < _servers.size(); ++i)
-	{
-		_servers[i].Start();
+		_servers.back().Start();
 	}
 }
 
@@ -73,41 +70,34 @@ void ServerManager::AddListenSocketsToEpoll()
 	// Add each server's listening socket to epoll
 	for (size_t i = 0; i < _servers.size(); ++i)
 	{
-		int fd = _servers[i].GetSocketFD();
-		struct epoll_event epollEvent;
-		std::memset(&epollEvent, 0, sizeof(epollEvent));
-
-		// Set the events to monitor
-		epollEvent.events = EPOLLIN; // monitor for read events
-		epollEvent.data.fd = fd;
-
-		// Add the server socket to the epoll instance
-		if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, fd, &epollEvent) == -1)
+		const std::vector<int>& socketFDs = _servers[i].GetSocketFDs();
+		for (size_t j = 0; j < socketFDs.size(); ++j)
 		{
-			close(fd);
-			close(_epollFD);
-			throw std::runtime_error("Server Manager | failed to add server socket to epoll");
+			struct  epoll_event epollEvent;
+			std::memset(&epollEvent, 0, sizeof(epollEvent));
+			epollEvent.events = EPOLLIN | EPOLLET; // Edge-triggered for listening sockets
+			epollEvent.data.fd = socketFDs[j];
+			if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, socketFDs[j], &epollEvent) == -1)
+				throw std::runtime_error("Server Manager | failed to add server socket to epoll");
 		}
 	}
 }
 
 // Handles new client connections for a given server
-void ServerManager::HandleNewConnections(Server &server)
+void ServerManager::HandleNewConnections(int listening, Server &server)
 {
 	// Accept all pending connections
 	while (true)
 	{
-		int client_fd = server.acceptClient();
+		int client_fd = server.acceptClient(listening);
 		
 		// Check for errors
 		if (client_fd < 0)
 			break;
 
-		// Set client socket to non-blocking
-		SetNonBlocking(client_fd);
-	
 		// Map client fd to its appropriate server
 		_clientToServer[client_fd] = &server;
+		_clientParsers[client_fd] = HTTPRequest();
 
 		// Add client socket to epoll monitoring
 		struct epoll_event event;
@@ -120,6 +110,7 @@ void ServerManager::HandleNewConnections(Server &server)
 		{
 			close(client_fd);
 			_clientToServer.erase(client_fd);
+			_clientParsers.erase(client_fd);
 			continue;
 		}
 
@@ -130,7 +121,7 @@ void ServerManager::HandleNewConnections(Server &server)
 // Handles activity on a client socket
 void ServerManager::HandleClientActivity(int client_fd)
 {
-	char buffer[1024];
+	char buffer[4096];
 	std::memset(buffer, 0, sizeof(buffer));
 
 	// Read data from client
@@ -140,27 +131,49 @@ void ServerManager::HandleClientActivity(int client_fd)
 		CloseClient(client_fd);
 		return;
 	}
-
-	std::cout << "Server Manager | Received data from client fd " << client_fd << ": " << buffer << std::endl;
 	
-	// parsing and response logic would go here
-	CloseClient(client_fd); // Close client after handling for this example
+	std::string chunk(buffer, bytesRead);
+	// Parse the HTTP request chunk
+	HTTPRequest& parser = _clientParsers[client_fd];
+	ParseStatus status = parser.ParseRequestChunk(chunk);
+
+	if (status == Incomplete)
+	{
+		return; // wait for more data
+	}
+	if (status != Success || !parser.IsComplete()) // If there is any error found in parsing
+	{
+		// notify the server admin and close the connection
+		std::cerr << "Server Manager | Wrong Request from Client " << client_fd << ": " << parser.GetErrorMessage() << std::endl;
+		HTTPResponse error;
+		error.SetResponseToError(400, "HTTP/1.1", "Bad Request");
+		std::string badresponse = error.ResponseToString();
+		send(client_fd, badresponse.c_str(), badresponse.size(), 0);
+		CloseClient(client_fd);
+		return;
+	}
+
+	const ServerConfig &config = _clientToServer[client_fd]->GetServerConfig();
+	HTTPResponse response;
+	std::string httpResponse = response.GenerateResponse(parser, config);
+	// Send the response back to the client
+	send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
+	parser.ResetRequest(); // Reset parser for next request
+	// add keep alive support here in the future
+	CloseClient(client_fd); // Close connection after response
 }
 
 // Closes a client connection and cleans up
 void ServerManager::CloseClient(int client_fd)
 {
-	// Remove from epoll monitoring
-	struct epoll_event event;
-	std::memset(&event, 0, sizeof(event));
-	epoll_ctl(_epollFD, EPOLL_CTL_DEL, client_fd, &event);
-
-	// Close the client socket
+	epoll_ctl(_epollFD, EPOLL_CTL_DEL, client_fd, 0);
 	close(client_fd);
 
 	// Remove from client-server mapping
 	if (_clientToServer.find(client_fd) != _clientToServer.end())
 		_clientToServer.erase(client_fd);
+	if (_clientParsers.find(client_fd) != _clientParsers.end())
+		_clientParsers.erase(client_fd);
 
 	std::cout << "Server Manager | Closed connection for client fd: " << client_fd << std::endl;
 }
@@ -175,7 +188,7 @@ void ServerManager::RunLoop()
 	while (true)
 	{
 		// Wait for events
-		int numberOfEvents = epoll_wait(_epollFD, events, MAX_EVENTS, -1);
+		int numberOfEvents = epoll_wait(_epollFD, events, MAX_EVENTS, -1); // add function that handles timeouts later
 		if (numberOfEvents < 0) // if error
 		{
 			if (errno == EINTR) // interrupted by signal restart loop
@@ -190,12 +203,18 @@ void ServerManager::RunLoop()
 			bool isListening = false;
 			for (size_t j = 0; j < _servers.size(); ++j) // check if it's a listening socket
 			{
-				if (fileDescriptor == _servers[j].GetSocketFD()) // if listening socket then handle new connections
+				const std::vector<int>& socketFDs = _servers[j].GetSocketFDs();
+				for (size_t k = 0; k < socketFDs.size(); ++k)
 				{
-					isListening = true;
-					HandleNewConnections(_servers[j]);
-					break;
+					if (fileDescriptor == socketFDs[k])
+					{
+						isListening = true;
+						HandleNewConnections(socketFDs[k], _servers[j]); // handle new connections
+						break;
+					}
 				}
+				if (isListening)
+					break;
 			}
 			if (isListening)
 				continue;

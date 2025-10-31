@@ -6,14 +6,14 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 13:56:55 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/10/30 20:09:05 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/ConfigParser.hpp"
 
 // ==== Constructor ====
-ConfigParser::ConfigParser(const std::string &filePath) : _filePath(filePath), _index(0)
+ConfigParser::ConfigParser(const std::string& filePath) : _filePath(filePath), _index(0)
 {
 	GetContent();
 	TokenizeFile();
@@ -119,7 +119,7 @@ std::string ConfigParser::Next()
 }
 
 // Confirms that the next token matches the expected value
-void ConfigParser::Expect(const std::string &expected)
+void ConfigParser::Expect(const std::string& expected)
 {
 	std::string token = Next();
 	if (token != expected)
@@ -131,8 +131,6 @@ void ConfigParser::Expect(const std::string &expected)
 // Parses a server block and returns a ServerConfig object
 ServerConfig ConfigParser::ParseServer()
 {
-	// Values need to be initialized to default values to avoid warnings!
-	// ServerConfig serv = initializeServerConfig();
 	ServerConfig serv;
 
 	Expect("server");
@@ -148,8 +146,7 @@ ServerConfig ConfigParser::ParseServer()
 }
 
 // Parse helper, tons of if-else to parse server parts
-	// Uninitialized values stem here
-void ConfigParser::ParseServerParts(ServerConfig &server, const std::string &token)
+void ConfigParser::ParseServerParts(ServerConfig& server, const std::string& token)
 {
 	if(token == "listen")
 	{
@@ -163,7 +160,7 @@ void ConfigParser::ParseServerParts(ServerConfig &server, const std::string &tok
 			server.listens.push_back(std::make_pair("localhost", std::atoi(addressIP.c_str())));
 		Expect(";");
 	}
-	else if (token == "client_max_bady_size")
+	else if (token == "client_max_body_size")
 	{
 		server.clientMaxBodySize = std::atoi(Next().c_str());
 		Expect(";");
@@ -208,7 +205,7 @@ LocationConfig ConfigParser::ParseLocation()
 }
 
 // Parse helper, tons of if-else to parse location parts
-void ConfigParser::ParseLocationParts(LocationConfig &location, const std::string &token)
+void ConfigParser::ParseLocationParts(LocationConfig& location, const std::string& token)
 {
 	if (token == "methods")
 	{
@@ -348,8 +345,10 @@ void ConfigParser::ValidateConfig(ServerConfig& server)
 		
 		if (!loc.cgiExtension.empty())
 			if (loc.cgiExtension[0] != '.')
-				throw std::runtime_error("CGI extension must start with a dot in location: " + loc.path);	
-	}
+				throw std::runtime_error("CGI extension must start with a dot in location: " + loc.path);
+			}
+	if (server.listens.empty())
+		server.listens.push_back(std::make_pair("127.0.0.1", 8080));
 }
 
 // ==== Public Parse Method ====
@@ -366,7 +365,7 @@ std::vector<ServerConfig> ConfigParser::parse()
 		else
 			throw std::runtime_error("expected the token: server got: " + token);
 	}
-	for (size_t i = 0; i < servers.size(); i++)
+	for (size_t i = 0; i < servers.size(); ++i)
 		ValidateConfig(servers[i]);
 	return (servers);
 }
