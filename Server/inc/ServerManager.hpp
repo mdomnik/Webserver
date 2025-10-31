@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:08:58 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 13:56:25 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/30 17:17:38 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 
 #include "../../Config/inc/ServerConfig.hpp"
 #include "../../HTTP/HTTPRequest/inc/HTTPRequest.hpp"
+#include "../../HTTP/HTTPResponse/inc/HTTPResponse.hpp"
 #include "Server.hpp"
 
 #define MAX_EVENTS 64 // Maximum number of poll events

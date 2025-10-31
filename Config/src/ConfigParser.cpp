@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 14:10:59 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/30 20:09:05 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -344,8 +344,10 @@ void ConfigParser::ValidateConfig(ServerConfig& server)
 		
 		if (!loc.cgiExtension.empty())
 			if (loc.cgiExtension[0] != '.')
-				throw std::runtime_error("CGI extension must start with a dot in location: " + loc.path);	
-	}
+				throw std::runtime_error("CGI extension must start with a dot in location: " + loc.path);
+			}
+	if (server.listens.empty())
+		server.listens.push_back(std::make_pair("127.0.0.1", 8080));
 }
 
 // ==== Public Parse Method ====

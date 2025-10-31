@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 12:58:50 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 12:23:35 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/31 15:50:30 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ class HTTPRequest
 		const std::string& GetHTTPVersion() const;
 		const std::map<std::string, std::string>& GetHeaders() const;
 		const std::string& GetBody() const;
-	public:
+
 		// Parsing stages
 		ParseStatus ParseRequestLine();
 		ParseStatus ParseHeaders();

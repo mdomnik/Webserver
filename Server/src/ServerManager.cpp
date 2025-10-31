@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 14:05:21 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/10/31 16:42:52 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ void ServerManager::AddListenSocketsToEpoll()
 		{
 			struct  epoll_event epollEvent;
 			std::memset(&epollEvent, 0, sizeof(epollEvent));
-			epollEvent.events = EPOLLIN; // monitor for read events
+			epollEvent.events = EPOLLIN | EPOLLET; // Edge-triggered for listening sockets
 			epollEvent.data.fd = socketFDs[j];
 			if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, socketFDs[j], &epollEvent) == -1)
 				throw std::runtime_error("Server Manager | failed to add server socket to epoll");
@@ -121,7 +121,7 @@ void ServerManager::HandleNewConnections(int listening, Server &server)
 // Handles activity on a client socket
 void ServerManager::HandleClientActivity(int client_fd)
 {
-	char buffer[2048];
+	char buffer[4096];
 	std::memset(buffer, 0, sizeof(buffer));
 
 	// Read data from client
@@ -141,42 +141,26 @@ void ServerManager::HandleClientActivity(int client_fd)
 	{
 		return; // wait for more data
 	}
-	else if (status != Success || !parser.IsComplete()) // If there is any error found in parsing
+	if (status != Success || !parser.IsComplete()) // If there is any error found in parsing
 	{
 		// notify the server admin and close the connection
 		std::cerr << "Server Manager | Wrong Request from Client " << client_fd << ": " << parser.GetErrorMessage() << std::endl;
-		const char *response = "HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n"; // simple bad request response
-		send(client_fd, response, strlen(response), 0);
+		HTTPResponse error;
+		error.SetResponseToError(400, "HTTP/1.1", "Bad Request");
+		std::string badresponse = error.ResponseToString();
+		send(client_fd, badresponse.c_str(), badresponse.size(), 0);
 		CloseClient(client_fd);
 		return;
 	}
-	else
-	{
-		//show parsed request details
-		std::cout << "Server Manager | Successfully parsed request from Client " << client_fd << ": " 
-				  << parser.GetMethod() << " " << parser.GetPath() << " " << parser.GetHTTPVersion() << std::endl;
-		std::map<std::string, std::string> headers = parser.GetHeaders();
-		std::cout << "    Headers:" << std::endl;
-		for (std::map<std::string, std::string>::const_iterator it = headers.begin(); it != headers.end(); ++it)
-			std::cout << "    " << it->first << ": " << it->second << std::endl;
-		std::cout << "    Body: [" << parser.GetBody() << "]" << std::endl;
 
-		// For demonstration, send a simple response
-		std::string response = 
-			"HTTP/1.1 200 OK\r\n"
-			"Content-Length: 13\r\n"
-			"Connection: close\r\n"
-			"\r\n"
-			"Hello, World!";
-
-		//send response to client
-		send(client_fd, response.c_str(), response.size(), 0);
-
-		// Reset parser for next request
-		parser.ResetRequest();
-		CloseClient(client_fd); 
-	}
-	
+	const ServerConfig &config = _clientToServer[client_fd]->GetServerConfig();
+	HTTPResponse response;
+	std::string httpResponse = response.GenerateResponse(parser, config);
+	// Send the response back to the client
+	send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
+	parser.ResetRequest(); // Reset parser for next request
+	// add keep alive support here in the future
+	CloseClient(client_fd); // Close connection after response
 }
 
 // Closes a client connection and cleans up
@@ -204,7 +188,7 @@ void ServerManager::RunLoop()
 	while (true)
 	{
 		// Wait for events
-		int numberOfEvents = epoll_wait(_epollFD, events, MAX_EVENTS, -1);
+		int numberOfEvents = epoll_wait(_epollFD, events, MAX_EVENTS, -1); // add function that handles timeouts later
 		if (numberOfEvents < 0) // if error
 		{
 			if (errno == EINTR) // interrupted by signal restart loop
