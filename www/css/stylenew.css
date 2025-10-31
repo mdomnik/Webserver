@@ -1,0 +1,91 @@
+:root {
+	--color-box: hsla(180, 1%, 74%, 0.267);
+	--color-box-border: hsla(61, 45%, 60%, 0.137);
+	--color-text: hsl(270, 26%, 11%);
+	--color-hover: hsl(270, 46%, 26%);
+	--color-visited: hsl(267, 9%, 24%);
+}
+
+html {
+	font-family: "Roboto", sans-serif;
+	font-weight: bolder;
+	font-optical-sizing: auto;
+	font-style: normal;
+	font-variation-settings: "wdth" 100;
+}
+
+a:visited {
+	color: var(--color-visited);
+}
+
+a:hover {
+	color: var(--color-hover);
+}
+
+#Home {
+	align-self:flex-start;
+}
+
+.Head {
+	display: flex;
+	/* flex-direction: row-reverse; */
+	margin: 8px;
+	padding: 15px;
+	background-color: hsla(180, 1%, 74%, 0.062);
+	border-style: none;
+	border-color: var(--color-box-border);
+	border-radius: 0.5vmax;
+}
+
+.Body {
+	background-image: url(../yuyu.jpg);
+	background-size: 100vmax;
+	background-size: cover;
+	min-height: 95vh;
+	margin: 8px;
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	flex-direction: column;
+}
+
+.MainPage {
+	display:flex;
+	background-color: var(--color-box);
+	backdrop-filter: blur(3px);
+	border-radius: 0.25vmax;
+	color: var(--color-text);
+	padding: 2%;
+	margin: 8px;
+}
+
+.Inner {
+	flex-grow: 1;
+	color: var(--color-text);
+	text-align: center;
+	padding-top: 20px;
+}
+
+.Form {
+	background-color: var(--color-box);
+	backdrop-filter: blur(3px);
+	border-radius: 0.25vmax;
+	margin: 8px;
+	padding: 25px;
+}
+
+.Foot {
+	background-color: hsla(180, 1%, 74%, 0.062);
+	color: hsl(0, 0%, 100%);
+	padding-top: 5px;
+	padding-bottom: 2px;
+	padding-left: 5px;
+}
+
+.boox {
+	background-color: var(--color-box);
+	text-decoration: none;
+	color: var(--color-text);
+	padding: 10px;
+	margin: 5px;
+	border-radius: 0.25vmax;
+}
