@@ -22,8 +22,13 @@ a:hover {
 	color: var(--color-hover);
 }
 
+#Home {
+	align-self:flex-start;
+}
+
 .Head {
 	display: flex;
+	flex-direction: row-reverse;
 	padding: 15px;
 	background-color: hsla(180, 1%, 74%, 0.062);
 	border-style: none;
@@ -34,8 +39,8 @@ a:hover {
 .Body {
 	background-image: url(../yuyu.jpg);
 	background-size: 100vmax;
-	min-height: 100vh;
-	margin: 15px;
+	min-height: 95vh;
+	margin: 8px;
 	display: grid;
 	grid-template-rows: auto 1fr auto;
 	flex-direction: column;
@@ -48,8 +53,7 @@ a:hover {
 	border-radius: 0.25vmax;
 	color: var(--color-text);
 	padding: 2%;
-	margin: 2%;
-
+	margin: 8px;
 }
 
 .Inner {
@@ -60,8 +64,10 @@ a:hover {
 }
 
 .Form {
-	background-color: hsla(180, 1%, 74%, 0.267);
+	background-color: var(--color-box);
+	backdrop-filter: blur(3px);
 	border-radius: 0.25vmax;
+	margin: 8px;
 	padding: 25px;
 }
 
