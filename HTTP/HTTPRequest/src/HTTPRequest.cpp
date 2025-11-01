@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 17:03:20 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 19:52:22 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,7 @@ bool HTTPRequest::IsKeepAlive() const
     // Default: HTTP/1.1 = keep-alive unless stated otherwise
     if (_httpVersion == "HTTP/1.1")
     {
+		std::cout << "Boof?\n";
         std::map<std::string, std::string>::const_iterator it = _headers.find("connection");
         if (it != _headers.end())
         {
@@ -94,14 +95,17 @@ bool HTTPRequest::IsKeepAlive() const
             for (size_t i = 0; i < val.size(); ++i)
                 val[i] = std::tolower(static_cast<unsigned char>(val[i]));
             if (val == "close")
-                return false;
+            {
+				return false;
+			}
         }
         return true; // implicit keep-alive
     }
 
     // For HTTP/1.0, keep-alive only if explicitly stated
-    if (_httpVersion == "HTTP/1.0")
+    else if (_httpVersion == "HTTP/1.0")
     {
+		std::cout << "Meow?\n";
         std::map<std::string, std::string>::const_iterator it = _headers.find("connection");
         if (it != _headers.end())
         {
@@ -128,17 +132,23 @@ ParseStatus HTTPRequest::ParseRequestChunk(const std::string &chunk)
 	// Main parsing loop
 	while (true)
 	{
+		std::cout << "\033[38;5;206m" << "---- Parsing State ----" << "\033[0m" << std::endl;
+		std::cout << "Current State: " << _state << std::endl;
+		std::cout << "buffer: " << _buffer << std::endl;
 		if (_state == RequestLineState) //checks which state we are in
 		{
-			//std::cout << "buffer: " << _buffer << std::endl;
 			ParseStatus status = ParseRequestLine(); //parses the current stage
-			if (status != Success)
+			if (status != Success) {
+				std::cout << "exit status: " << status << std::endl;
 				return (status);
+			}
 			_state = HeadersState;
 		}
 		if (_state == HeadersState)
 		{
+			// std::cout << "Current State insude: " << _state << std::endl;
 			ParseStatus status = ParseHeaders();
+			// std::cout << "Current State after parseheaders: " << _state << std::endl;
 			if (status != Success)
 				return (status);
 		}
@@ -173,6 +183,7 @@ ParseStatus HTTPRequest::ParseRequestLine()
 	size_t EOL = _buffer.find(CRLF);
 	if (EOL == std::string::npos)
 	{
+		std::cout << "Request line incomplete, buffer size: " << _buffer.size() << std::endl;
 		if (_buffer.size() > MAX_BYTES) //if request line too long
 		{
 			_errorMessage = "Request Line too long";

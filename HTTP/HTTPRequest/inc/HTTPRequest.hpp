@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 12:58:50 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 16:53:49 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 20:06:08 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ enum ParseState
 	RequestLineState,
 	HeadersState,
 	BodyState,
+	chunkedBodyState,
 	DoneState,
 	ErrorState
 };

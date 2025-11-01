@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 14:59:05 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 20:03:51 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,6 +139,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 	// Parse the HTTP request chunk
 	HTTPRequest& parser = _clientParsers[client_fd];
 	ParseStatus status = parser.ParseRequestChunk(chunk);
+	std::cout << "STATUS: " << status << std::endl;
 	_clientLastActivity[client_fd] = std::time(NULL); // COME BACK!!!!!!!!!!!!
 
 	if (status == Incomplete)
@@ -159,22 +160,25 @@ void ServerManager::HandleClientActivity(int client_fd)
 
 	const ServerConfig &config = _clientToServer[client_fd]->GetServerConfig();
 	HTTPResponse response;
-	bool keepAlive = parser.IsKeepAlive();
-	response.SetHeader("Connection", keepAlive ? "keep-alive" : "close");
+	// bool keepAlive = parser.IsKeepAlive();
+	// response.SetHeader("Connection", keepAlive ? "keep-alive" : "close");
 	std::string httpResponse = response.GenerateResponse(parser, config);
 	// Send the response back to the client
 	send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
 
-	if (keepAlive)
-	{
-		parser.ResetRequest();
-		_clientLastActivity[client_fd] = std::time(NULL);
-		std::cout << "Server Manager | Keep-Alive active for client fd: " << client_fd << std::endl;
-	}
-	else
-	{
-		CloseClient(client_fd);
-	}
+	parser.ResetRequest(); // Reset parser for next request
+	CloseClient(client_fd);
+	// if (keepAlive)
+	// {
+	// 	parser.ResetRequest();
+	// 	_clientLastActivity[client_fd] = std::time(NULL);
+	// 	std::cout << "Server Manager | Keep-Alive active for client fd: " << client_fd << std::endl;
+	// }
+	// else
+	// {
+	// 	parser.ResetRequest();
+	// 	CloseClient(client_fd);
+	// }
 }
 
 // Closes a client connection and cleans up
