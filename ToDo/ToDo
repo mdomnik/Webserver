@@ -1,0 +1,5 @@
+ - Test POST http://localhost:8080/ with a size of 0
+FATAL ERROR ON LAST TEST: bad status code
+
+ - add client_max_body_size to location
+

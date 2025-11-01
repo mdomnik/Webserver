@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:08:58 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 14:24:07 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 14:48:49 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 #include <ctime>
+#include <csignal>
 
 #include "../../Config/inc/ServerConfig.hpp"
 #include "../../HTTP/HTTPRequest/inc/HTTPRequest.hpp"

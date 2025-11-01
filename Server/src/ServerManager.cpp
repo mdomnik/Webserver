@@ -6,12 +6,13 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 14:26:23 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 14:59:05 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/ServerManager.hpp"
-
+// Global flag updated by the signal handler
+volatile sig_atomic_t g_stopSignal = 0;
 // ==== Constructor and Destructor ====
 ServerManager::ServerManager(const std::vector<ServerConfig> &configs) : _epollFD(-1)
 {
@@ -195,13 +196,23 @@ void ServerManager::CloseClient(int client_fd)
 }
 
 // ==== Public Server Operations ====
-
+void handleSignal(int signum)
+{
+    if (signum == SIGINT || signum == SIGTERM)
+    {
+        std::cout << "\nReceived termination signal (" << signum << "). Shutting down gracefully...\n";
+        g_stopSignal = 1;
+    }
+}
 // the main event loop handling all server events
 void ServerManager::RunLoop()
 {
 	struct epoll_event events[MAX_EVENTS];
 	const int EPOLL_TIMEOUT_MS = 100;
-	while (true)
+	signal(SIGINT, handleSignal);
+	signal(SIGTERM, handleSignal);
+	signal(SIGPIPE, SIG_IGN);
+	while (!g_stopSignal)
 	{
 		// Wait for events
 		int numberOfEvents = epoll_wait(_epollFD, events, MAX_EVENTS, EPOLL_TIMEOUT_MS); // add function that handles timeouts later
@@ -238,45 +249,7 @@ void ServerManager::RunLoop()
 		CheckTimeouts();
 	}
 	ShutdownServers(); //interrupted, shutdown servers
-}
-
-void ServerManager::RunLoopStep()
-{
-	struct epoll_event events[MAX_EVENTS];
-
-	// Wait for events
-	int num = epoll_wait(_epollFD, events, MAX_EVENTS, 100); // 100 ms timeout for non-blocking
-	if (num < 0) // if error
-	{
-		if (errno == EINTR) // interrupted by signal restart loop
-			return;
-		throw std::runtime_error("Server Manager | epoll_wait failed");
-	}
-
-	for (int i = 0; i < num; ++i) // for each event
-	{
-		int fileDescriptor = events[i].data.fd;
-		
-		bool isListening = false;
-		for (size_t j = 0; j < _servers.size(); ++j) // check if it's a listening socket
-		{
-			const std::vector<int>& socketFDs = _servers[j].GetSocketFDs();
-			for (size_t k = 0; k < socketFDs.size(); ++k)
-			{
-				if (fileDescriptor == socketFDs[k])
-				{
-					isListening = true;
-					HandleNewConnections(socketFDs[k], _servers[j]); // handle new connections
-					break;
-				}
-			}
-			if (isListening)
-				break;
-		}
-		if (isListening)
-			continue;
-		HandleClientActivity(fileDescriptor); // handle client activity
-	}
+	std::cout << "Server Manager | Graceful shutdown complete.\n";
 }
 
 // Shuts down all servers and cleans up resources
