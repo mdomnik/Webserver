@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:20 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:47:47 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 14:23:20 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,7 @@ class HTTPResponse
 		std::map<std::string, std::string> _headers;
 		std::string _body;
 		
-		//setters
-		void SetStatus(int statusCode, const std::string &httpVersion, const std::string &reason);
-		void SetHeader(const std::string &key, const std::string &value);
-		void SetBody(const std::string &body);
-
+		
 		// utility methods
 		std::string GetFileType(const std::string &path);
 		bool IsDirectory(const std::string &path);
@@ -53,7 +49,7 @@ class HTTPResponse
 		std::string HandleGET(const HTTPRequest &req, const ServerConfig &conf);
 		std::string HandlePOST(const HTTPRequest &req, const ServerConfig &conf);
 		std::string HandleDELETE(const HTTPRequest &req, const ServerConfig &conf);
-
+		
 		std::string ResponseFromCGI(const std::string &cgiOutput, const std::string &httpVersion);
 		std::string LoadErrorPage(int statusCode, const ServerConfig &config);
 		
@@ -61,6 +57,10 @@ class HTTPResponse
 		// Constructor
 		HTTPResponse();
 		
+		//setters
+		void SetStatus(int statusCode, const std::string &httpVersion, const std::string &reason);
+		void SetHeader(const std::string &key, const std::string &value);
+		void SetBody(const std::string &body);
 		// Response generation
 		std::string GenerateResponse(const HTTPRequest &request, const ServerConfig &config);
 		std::string ResponseToString() const;

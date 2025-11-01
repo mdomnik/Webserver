@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Upload a file!</title>
+
+	<!-- Link to modular assets (create these files) -->
+	<link rel="stylesheet" href="css/stylenew.css">
+	<script type="module" src="js/main.js" defer></script>
+</head>
+<header class="Head">
+		<a href="index.html" class="boox">Home</a>
+		<a href="uploadpage.html" class="boox">Upload</a>
+</header>
+<body class="Body">
+	<form action="./cgi-bin/upload.py" method="POST" enctype="multipart/form-data" class="Form">
+		<label for="myfile">Select a file:</label>
+		<input type="file" id="myfile" name="myfile">
+		<input type="submit" value="Submit">
+	</form>
+	<!-- Minimal inline example to stamp the template (move to js/main.js for modularity) -->
+	 
+</body>
+<footer class="Foot">WebServer by Maciej Naraa and Fernanda. Crafted with ❤️ and C++.</footer>
+</html>

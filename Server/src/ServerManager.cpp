@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:03:31 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 14:59:05 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/ServerManager.hpp"
-
+// Global flag updated by the signal handler
+volatile sig_atomic_t g_stopSignal = 0;
 // ==== Constructor and Destructor ====
 ServerManager::ServerManager(const std::vector<ServerConfig> &configs) : _epollFD(-1)
 {
@@ -98,6 +99,7 @@ void ServerManager::HandleNewConnections(int listening, Server &server)
 		// Map client fd to its appropriate server
 		_clientToServer[client_fd] = &server;
 		_clientParsers[client_fd] = HTTPRequest();
+		_clientLastActivity[client_fd] = std::time(NULL);
 
 		// Add client socket to epoll monitoring
 		struct epoll_event event;
@@ -111,6 +113,7 @@ void ServerManager::HandleNewConnections(int listening, Server &server)
 			close(client_fd);
 			_clientToServer.erase(client_fd);
 			_clientParsers.erase(client_fd);
+			_clientLastActivity.erase(client_fd);
 			continue;
 		}
 
@@ -136,6 +139,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 	// Parse the HTTP request chunk
 	HTTPRequest& parser = _clientParsers[client_fd];
 	ParseStatus status = parser.ParseRequestChunk(chunk);
+	_clientLastActivity[client_fd] = std::time(NULL); // COME BACK!!!!!!!!!!!!
 
 	if (status == Incomplete)
 	{
@@ -155,12 +159,22 @@ void ServerManager::HandleClientActivity(int client_fd)
 
 	const ServerConfig &config = _clientToServer[client_fd]->GetServerConfig();
 	HTTPResponse response;
+	bool keepAlive = parser.IsKeepAlive();
+	response.SetHeader("Connection", keepAlive ? "keep-alive" : "close");
 	std::string httpResponse = response.GenerateResponse(parser, config);
 	// Send the response back to the client
 	send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
-	parser.ResetRequest(); // Reset parser for next request
-	// add keep alive support here in the future
-	CloseClient(client_fd); // Close connection after response
+
+	if (keepAlive)
+	{
+		parser.ResetRequest();
+		_clientLastActivity[client_fd] = std::time(NULL);
+		std::cout << "Server Manager | Keep-Alive active for client fd: " << client_fd << std::endl;
+	}
+	else
+	{
+		CloseClient(client_fd);
+	}
 }
 
 // Closes a client connection and cleans up
@@ -174,33 +188,46 @@ void ServerManager::CloseClient(int client_fd)
 		_clientToServer.erase(client_fd);
 	if (_clientParsers.find(client_fd) != _clientParsers.end())
 		_clientParsers.erase(client_fd);
+	if (_clientLastActivity.find(client_fd) != _clientLastActivity.end())
+		_clientLastActivity.erase(client_fd);
+
 
 	std::cout << "Server Manager | Closed connection for client fd: " << client_fd << std::endl;
 }
 
 // ==== Public Server Operations ====
-
+void handleSignal(int signum)
+{
+    if (signum == SIGINT || signum == SIGTERM)
+    {
+        std::cout << "\nReceived termination signal (" << signum << "). Shutting down gracefully...\n";
+        g_stopSignal = 1;
+    }
+}
 // the main event loop handling all server events
 void ServerManager::RunLoop()
 {
 	struct epoll_event events[MAX_EVENTS];
-
-	while (true)
+	const int EPOLL_TIMEOUT_MS = 100;
+	signal(SIGINT, handleSignal);
+	signal(SIGTERM, handleSignal);
+	signal(SIGPIPE, SIG_IGN);
+	while (!g_stopSignal)
 	{
 		// Wait for events
-		int num = epoll_wait(_epollFD, events, MAX_EVENTS, -1); // add function that handles timeouts later
-		if (num < 0) // if error
+		int numberOfEvents = epoll_wait(_epollFD, events, MAX_EVENTS, EPOLL_TIMEOUT_MS); // add function that handles timeouts later
+		if (numberOfEvents < 0) // if error
 		{
 			if (errno == EINTR) // interrupted by signal restart loop
 				continue;
 			throw std::runtime_error("Server Manager | epoll_wait failed");
 		}
 
-		for (int i = 0; i < num; ++i) // for each event
+		for (int i = 0; i < numberOfEvents; ++i) // for each event
 		{
 			int fileDescriptor = events[i].data.fd;
-			
 			bool isListening = false;
+			
 			for (size_t j = 0; j < _servers.size(); ++j) // check if it's a listening socket
 			{
 				const std::vector<int>& socketFDs = _servers[j].GetSocketFDs();
@@ -216,51 +243,13 @@ void ServerManager::RunLoop()
 				if (isListening)
 					break;
 			}
-			if (isListening)
-				continue;
-			HandleClientActivity(fileDescriptor); // handle client activity
+			if (!isListening)
+				HandleClientActivity(fileDescriptor); // handle client activity
 		}
+		CheckTimeouts();
 	}
 	ShutdownServers(); //interrupted, shutdown servers
-}
-
-void ServerManager::RunLoopStep()
-{
-	struct epoll_event events[MAX_EVENTS];
-
-	// Wait for events
-	int num = epoll_wait(_epollFD, events, MAX_EVENTS, 100); // 100 ms timeout for non-blocking
-	if (num < 0) // if error
-	{
-		if (errno == EINTR) // interrupted by signal restart loop
-			return;
-		throw std::runtime_error("Server Manager | epoll_wait failed");
-	}
-
-	for (int i = 0; i < num; ++i) // for each event
-	{
-		int fileDescriptor = events[i].data.fd;
-		
-		bool isListening = false;
-		for (size_t j = 0; j < _servers.size(); ++j) // check if it's a listening socket
-		{
-			const std::vector<int>& socketFDs = _servers[j].GetSocketFDs();
-			for (size_t k = 0; k < socketFDs.size(); ++k)
-			{
-				if (fileDescriptor == socketFDs[k])
-				{
-					isListening = true;
-					HandleNewConnections(socketFDs[k], _servers[j]); // handle new connections
-					break;
-				}
-			}
-			if (isListening)
-				break;
-		}
-		if (isListening)
-			continue;
-		HandleClientActivity(fileDescriptor); // handle client activity
-	}
+	std::cout << "Server Manager | Graceful shutdown complete.\n";
 }
 
 // Shuts down all servers and cleans up resources
@@ -287,4 +276,19 @@ void ServerManager::ShutdownServers()
 	}
 
 	std::cout << "Server Manager | All servers shut down" << std::endl;
+}
+
+void ServerManager::CheckTimeouts()
+{
+    time_t now = std::time(NULL);
+    std::vector<int> toClose;
+
+    for (std::map<int, time_t>::iterator it = _clientLastActivity.begin(); it != _clientLastActivity.end(); ++it)
+    {
+        if (now - it->second > 10) // 10 seconds timeout
+            toClose.push_back(it->first);
+    }
+
+    for (size_t i = 0; i < toClose.size(); ++i)
+        CloseClient(toClose[i]);
 }

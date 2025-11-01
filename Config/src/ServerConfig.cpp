@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:31:18 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:41:13 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 14:22:19 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ LocationConfig::LocationConfig() : autoIndex(false), uploadEnable(false)
 }
 
 // Default constructor for server blocks
-ServerConfig::ServerConfig() : serverName("Default") ,clientMaxBodySize(10485760)
+ServerConfig::ServerConfig() : serverName("Default") ,clientMaxBodySize(10485760), _keepAliveTimeout(10)
 {
 	errorPages[404] = "/errors/404.html";
 }

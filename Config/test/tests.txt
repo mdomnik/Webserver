@@ -1,0 +1,12 @@
+./test/multi_server_config.conf
+./test_configs/base_test.conf
+./test_configs/listen_test.conf
+./test_configs/listen_test_invalid.conf
+./test_configs/listen_test_invalid_duplicate.conf
+./test_configs/location_test.conf
+./test_configs/location_test_invalid.conf
+./test_configs/method_test.conf
+./test_configs/method_test_invalid.conf
+./test_configs/test_invalid_syntax-1.conf
+./test_configs/test_invalid_syntax-2.conf
+./test_configs/test_invalid_syntax-3.conf

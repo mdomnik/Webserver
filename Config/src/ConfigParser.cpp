@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
 /*   Updated: 2025/10/30 20:09:05 by mdomnik          ###   ########.fr       */
@@ -53,9 +53,9 @@ void ConfigParser::GetContent()
 // Tokenizes the _fileContent into _tokens vector
 void ConfigParser::TokenizeFile()
 {
-	std::string buffer; // buffer for building tokens
+	std::string buffer;	 // buffer for building tokens
 	int isInComment = 0; // checking if a line is a comment
-	
+
 	for (size_t i = 0; i < _fileContent.size(); ++i) // loop through each character
 	{
 		char c = _fileContent[i];
@@ -105,8 +105,8 @@ void ConfigParser::TokenizeFile()
 // Shows the next value in _tokens without advancing the index
 std::string ConfigParser::Peek() const
 {
-	if (_index >= _tokens.size()) //if at end of tokens
-	throw std::runtime_error("unexpected end of configuration file");
+	if (_index >= _tokens.size()) // if at end of tokens
+		throw std::runtime_error("unexpected end of configuration file");
 	return _tokens[_index];
 }
 
@@ -114,7 +114,7 @@ std::string ConfigParser::Peek() const
 std::string ConfigParser::Next()
 {
 	if (_index >= _tokens.size())
-	throw std::runtime_error("unexpected end of configuration file");
+		throw std::runtime_error("unexpected end of configuration file");
 	return _tokens[_index++];
 }
 
@@ -123,7 +123,7 @@ void ConfigParser::Expect(const std::string& expected)
 {
 	std::string token = Next();
 	if (token != expected)
-	throw std::runtime_error("expected the token: " + expected + " got: " + token);
+		throw std::runtime_error("expected the token: " + expected + " got: " + token);
 }
 
 // ==== Block Parsing Methods ====
@@ -132,10 +132,11 @@ void ConfigParser::Expect(const std::string& expected)
 ServerConfig ConfigParser::ParseServer()
 {
 	ServerConfig serv;
+
 	Expect("server");
 	Expect("{");
-	
-	while(Peek() != "}")
+
+	while (Peek() != "}")
 	{
 		std::string token = Next();
 		ParseServerParts(serv, token);
@@ -190,10 +191,10 @@ void ConfigParser::ParseServerParts(ServerConfig& server, const std::string& tok
 LocationConfig ConfigParser::ParseLocation()
 {
 	LocationConfig loc;
-	
+
 	loc.path = Next();
 	Expect("{");
-	
+
 	while (Peek() != "}")
 	{
 		std::string token = Next();
@@ -268,7 +269,7 @@ void ConfigParser::ParseLocationParts(LocationConfig& location, const std::strin
 		Expect(";");
 	}
 	else
-	throw std::runtime_error("Unexpected token: " + token);
+		throw std::runtime_error("Unexpected token: " + token);
 }
 
 // ==== Validation Method and Helpers ====

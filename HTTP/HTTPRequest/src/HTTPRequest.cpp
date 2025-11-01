@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 13:14:24 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 13:55:11 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,61 @@ const std::string& HTTPRequest::GetHTTPVersion() const { return (_httpVersion); 
 const std::map<std::string, std::string>& HTTPRequest::GetHeaders() const { return (_headers); }
 
 const std::string& HTTPRequest::GetBody() const { return (_body); }
+
+std::string HTTPRequest::GetHeader(const std::string& key) const
+{
+	std::string lower = key;
+	for (size_t i = 0; i < lower.size(); ++i)
+		lower[i] = std::tolower(static_cast<unsigned char>(lower[i]));
+
+	std::map<std::string, std::string>::const_iterator it = _headers.find(lower);
+	if (it != _headers.end())
+		return it->second;
+	return "";
+}
+
+bool HTTPRequest::HasHeader(const std::string& key) const
+{
+    std::string lower = key;
+    for (size_t i = 0; i < lower.size(); ++i)
+        lower[i] = std::tolower(static_cast<unsigned char>(lower[i]));
+
+    return _headers.find(lower) != _headers.end();
+}
+
+bool HTTPRequest::IsKeepAlive() const
+{
+    // Default: HTTP/1.1 = keep-alive unless stated otherwise
+    if (_httpVersion == "HTTP/1.1")
+    {
+        std::map<std::string, std::string>::const_iterator it = _headers.find("connection");
+        if (it != _headers.end())
+        {
+            std::string val = it->second;
+            for (size_t i = 0; i < val.size(); ++i)
+                val[i] = std::tolower(static_cast<unsigned char>(val[i]));
+            if (val == "close")
+                return false;
+        }
+        return true; // implicit keep-alive
+    }
+
+    // For HTTP/1.0, keep-alive only if explicitly stated
+    if (_httpVersion == "HTTP/1.0")
+    {
+        std::map<std::string, std::string>::const_iterator it = _headers.find("connection");
+        if (it != _headers.end())
+        {
+            std::string val = it->second;
+            for (size_t i = 0; i < val.size(); ++i)
+                val[i] = std::tolower(static_cast<unsigned char>(val[i]));
+            if (val == "keep-alive")
+                return true;
+        }
+    }
+
+    return false;
+}
 
 
 // ==== Main Parsing Loop ====

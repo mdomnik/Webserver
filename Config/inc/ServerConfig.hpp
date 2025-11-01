@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:14:38 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 20:51:57 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 13:45:30 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,8 @@ struct ServerConfig
     
 	std::vector<std::pair<std::string, int> > listens; //ip:port pairs on which we can access the server
     size_t clientMaxBodySize; // Maximum amount of connections per socket
-    
+    size_t _keepAliveTimeout;
+	
 	std::map<int, std::string> errorPages; // direction to error pages
     
 	std::vector<LocationConfig> locations; //vector container storing all the locations from this server

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 14:12:00 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 12:56:59 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 14:51:55 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,26 +15,13 @@
 #include <iostream>
 #include <csignal>
 
-// Global flag updated by the signal handler
-volatile sig_atomic_t g_stopSignal = 0;
 
-// Simple signal handler
-void HandleSignal(int sig)
-{
-	if (sig == SIGINT)
-	{
-		std::cout << "\n🛑 Caught SIGINT — stopping server gracefully..." << std::endl;
-		g_stopSignal = 1;
-	}
-}
+
 
 int main(int argc, char **argv)
 {
 	try
 	{
-		// === Register signal handler ===
-		signal(SIGINT, HandleSignal);
-		signal(SIGTERM, HandleSignal);
 
 		// === Parse config file ===
 		std::string configPath;
@@ -55,18 +42,7 @@ int main(int argc, char **argv)
 
 		// === Create ServerManager ===
 		ServerManager manager(configs);
-
-		// === Main event loop ===
-		std::cout << "🚀 Webserv is running. Press CTRL+C to stop.\n";
-		while (!g_stopSignal)
-		{
-			manager.RunLoopStep(); // a single non-blocking iteration
-		}
-
-		// === Graceful shutdown ===
-		std::cout << "🧹 Cleaning up..." << std::endl;
-		manager.ShutdownServers();
-		std::cout << "✅ Server stopped cleanly." << std::endl;
+		manager.RunLoop();
 	}
 	catch (const std::exception &e)
 	{

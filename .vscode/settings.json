@@ -50,6 +50,10 @@
 		"cstring": "cpp",
 		"set": "cpp",
 		"ctime": "cpp",
+		"optional": "cpp",
+		"ranges": "cpp",
+		"span": "cpp",
+		"cinttypes": "cpp"
 		"csignal": "cpp"
 	}
 }
