@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 12:58:50 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:55:28 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 16:53:49 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cctype>
+#include  <iostream>
 
 #define CRLF "\r\n"
 #define DOUBLECRLF "\r\n\r\n"

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseUtils.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:17:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:49:51 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 16:27:04 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,4 +206,16 @@ const LocationConfig& HTTPResponse::FindMostMatchingLocation(const ServerConfig 
 		}
 	}
 	return (*bestMatch);
+}
+
+bool HTTPResponse::IsMethodAllowed(const LocationConfig &location, const std::string &method)
+{
+    if (location.methods.empty())
+        return (true);
+    for (size_t i = 0; i < location.methods.size(); ++i)
+    {
+        if (location.methods[i] == method)
+            return (true);
+    }
+    return (false);
 }

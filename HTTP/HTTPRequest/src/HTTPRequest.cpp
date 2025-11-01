@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:55:11 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 17:03:20 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,7 @@ ParseStatus HTTPRequest::ParseRequestChunk(const std::string &chunk)
 	{
 		if (_state == RequestLineState) //checks which state we are in
 		{
+			//std::cout << "buffer: " << _buffer << std::endl;
 			ParseStatus status = ParseRequestLine(); //parses the current stage
 			if (status != Success)
 				return (status);
@@ -188,6 +189,11 @@ ParseStatus HTTPRequest::ParseRequestLine()
 	std::vector<std::string> components = HTTPSplitTokens(str);
 	if (components.size() != 3) //if not exactly 3 parts
 	{
+		std::cout << "Count of requrst " << components.size() << std::endl;
+		for (size_t i = 0; i < components.size(); ++i)
+		{
+			std::cout << "string: " << components[i] << std::endl; 
+		}
 		_errorMessage = "Malformed Request Line";
 		_state = ErrorState;
 		return (BadRequest);
