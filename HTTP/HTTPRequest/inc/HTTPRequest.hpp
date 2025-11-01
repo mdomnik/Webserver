@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 12:58:50 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/31 15:50:30 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 13:55:28 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,9 @@ class HTTPRequest
 		const std::string& GetHTTPVersion() const;
 		const std::map<std::string, std::string>& GetHeaders() const;
 		const std::string& GetBody() const;
+		std::string GetHeader(const std::string& key) const;
+		bool HasHeader(const std::string& key) const;
+		bool IsKeepAlive() const;
 
 		// Parsing stages
 		ParseStatus ParseRequestLine();
