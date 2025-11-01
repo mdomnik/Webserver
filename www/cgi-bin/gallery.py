@@ -42,14 +42,15 @@ print("""<!DOCTYPE html>
             <main class="gallery-grid">
 """)
 
-for filename in os.listdir(uploads_dir):
-    if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
-        print(f"""
-        <div class="gallery-item">
-            <img src="/uploads/{filename}" alt="{filename}">
-            <p>{filename}</p>
-        </div>
-        """)
+if os.path.exists(uploads_dir):
+    for filename in os.listdir(uploads_dir):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp')):
+            print(f'''
+            <div class="gallery-item">
+                <img src="/uploads/{filename}" alt="{filename}" class="uploaded-img">
+                <p>{filename}</p>
+            </div>
+            ''')
 
 print("""
             </main>

@@ -6,17 +6,38 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:51:54 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 14:31:52 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HTTPResponse.hpp"
 #include "../../CGI/inc/CGIHandler.hpp"
 
+static std::string URLDecode(const std::string &src)
+{
+    std::string decoded;
+    char hex[3] = {0};
+    for (size_t i = 0; i < src.size(); ++i)
+    {
+        if (src[i] == '%' && i + 2 < src.size())
+        {
+            hex[0] = src[i + 1];
+            hex[1] = src[i + 2];
+            decoded += static_cast<char>(strtol(hex, NULL, 16));
+            i += 2;
+        }
+        else if (src[i] == '+')
+            decoded += ' ';
+        else
+            decoded += src[i];
+    }
+    return decoded;
+}
+
 std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &config)
 {
 	std::string version = req.GetHTTPVersion().empty() ? "HTTP/1.1" : req.GetHTTPVersion();
-	std::string path = req.GetPath();
+	std::string path = URLDecode(req.GetPath());
 	const LocationConfig &location = FindMostMatchingLocation(config, path);
 	std::string root = location.root.empty() ? "./www" : location.root;
 	std::string fullPath = root + path;

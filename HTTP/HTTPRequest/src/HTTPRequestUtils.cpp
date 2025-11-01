@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 12:27:48 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 13:13:52 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 15:05:07 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ std::vector<std::string> HTTPSplitTokens(const std::string &str)
 {
 	std::vector<std::string> tokens;
 	std::string current;
+	
 	for (size_t i = 0; i < str.size(); ++i) //iterate through each character and see if there is whitespace
 	{
 		if (str[i] == ' ' || str[i] == '\t') // if whitespace, create token from previous
