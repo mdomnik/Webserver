@@ -1,40 +1,29 @@
-from flask import Flask, request, render_template_string
-import os
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import cgi, os
 
-app = Flask(__name__)
-UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+print("Content-Type: text/html; charset=utf-8\r\n\r\n")
 
-HTML_PAGE = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>File Upload</title>
-</head>
-<body>
-  <h2>Upload a File</h2>
-  <form method="POST" enctype="multipart/form-data">
-    <input type="file" name="file" required>
-    <button type="submit">Upload</button>
-  </form>
-  {% if filename %}
-  <p>Uploaded: {{ filename }}</p>
-  {% endif %}
-</body>
-</html>
-"""
+upload_dir = "./www/uploads"
+os.makedirs(upload_dir, exist_ok=True)
 
-@app.route("/", methods=["GET", "POST"])
-def upload_file():
-    filename = None
-    if request.method == "POST":
-        file = request.files.get("file")
-        if file:
-            filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-            file.save(filepath)
-            filename = file.filename
-    return render_template_string(HTML_PAGE, filename=filename)
+form = cgi.FieldStorage()
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if "file" in form and form["file"].filename:
+    filename = os.path.basename(form["file"].filename)
+    filepath = os.path.join(upload_dir, filename)
+    with open(filepath, "wb") as f:
+        f.write(form["file"].file.read())
+
+    print(f"""
+    <html><head><meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; URL=/cgi-bin/gallery.py" />
+    </head><body>
+    <p>✅ Uploaded {filename}. Redirecting...</p>
+    </body></html>
+    """)
+else:
+    print("""
+    <html><head><meta charset="UTF-8"><title>Upload Failed</title></head>
+    <body><p>❌ No file selected.</p><a href="/">Back</a></body></html>
+    """)

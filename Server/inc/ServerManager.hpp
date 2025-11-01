@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:08:58 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:43:49 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 14:24:07 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ class ServerManager
 
 		// Server operations
 		void RunLoop(); // Main event loop
+		void RunLoopStep();
 		void ShutdownServers(); // Shutdown all servers
 };
 

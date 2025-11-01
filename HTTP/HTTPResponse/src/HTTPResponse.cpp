@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:35 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/31 15:26:08 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 13:52:26 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,10 +106,37 @@ std::string HTTPResponse::LoadErrorPage(int statusCode, const ServerConfig &conf
 
 void HTTPResponse::SetResponseToError(int code, const std::string &version, const std::string &reason)
 {
-	std::ostringstream body;
-	body << "<html><head><title>" << code << " " << reason << "</title></head>"
-		 << "<body><h1>" << code << " " << reason << "</h1></body></html>";
 	SetStatus(code, version, reason);
+
+	std::ostringstream stream;
+	stream << "./www/errors/" << code << ".html";
+	std::string errorPath = stream.str();
+	
+	struct stat stats;
+	int DoesPageExist = stat(errorPath.c_str(), &stats);
+	
+	std::string body;
+
+	if (DoesPageExist)
+	{
+		std::ifstream file(errorPath.c_str(), std::ios::in | std::ios::binary);
+		if (file.is_open())
+		{
+			std::ostringstream fileContent;
+			fileContent << file.rdbuf();
+			file.close();
+			body = fileContent.str();
+		}
+	}
+
+	if (body.empty())
+	{
+		std::ostringstream defaultBody;
+		defaultBody << "<html><head><title>" << code << " " << reason << "</title></head>";
+		defaultBody << "<body><h1>" << code << " " << reason << "</h1></body></html>";
+		body = defaultBody.str();
+	}
+
 	SetHeader("Content-Type", "text/html");
-	SetBody(body.str());
+	SetBody(body);
 }

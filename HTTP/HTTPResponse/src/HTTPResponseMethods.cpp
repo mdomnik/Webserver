@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/31 15:30:28 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 13:51:54 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,8 +17,8 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 {
 	std::string version = req.GetHTTPVersion().empty() ? "HTTP/1.1" : req.GetHTTPVersion();
 	std::string path = req.GetPath();
-	const LocationConfig &location = config.locations[0];
-	std::string root = config.locations.empty() ? "./www" : location.root;
+	const LocationConfig &location = FindMostMatchingLocation(config, path);
+	std::string root = location.root.empty() ? "./www" : location.root;
 	std::string fullPath = root + path;
 
 	if (!location.cgiExtension.empty() && fullPath.size() >= location.cgiExtension.size() && fullPath.substr(fullPath.size() - location.cgiExtension.size()) == location.cgiExtension)
@@ -54,7 +54,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 	
 	if (IsDirectory(fullPath))
 	{
-		const LocationConfig &location = config.locations[0];
+		const LocationConfig &location = FindMostMatchingLocation(config, path);
 		if (location.autoIndex)
 		{
 			SetStatus(200, version, "OK");
@@ -107,8 +107,8 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig &config)
 {
 	std::string version = req.GetHTTPVersion().empty() ? "HTTP/1.1" : req.GetHTTPVersion();
-	const LocationConfig &location = config.locations[0];
-	std::string root = config.locations.empty() ? "./www" : location.root;
+	const LocationConfig &location = FindMostMatchingLocation(config, req.GetPath());
+	std::string root = location.root.empty() ? "./www" : location.root;
 	std::string fullPath = root + req.GetPath();
 	
 	if (!location.cgiExtension.empty() && fullPath.size() >= location.cgiExtension.size() && fullPath.substr(fullPath.size() - location.cgiExtension.size()) == location.cgiExtension)
@@ -190,7 +190,8 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 std::string HTTPResponse::HandleDELETE(const HTTPRequest &req, const ServerConfig &config)
 {
 	std::string version = req.GetHTTPVersion().empty() ? "HTTP/1.1" : req.GetHTTPVersion();
-	std::string root = config.locations.empty() ? "./www" : config.locations[0].root;
+	const LocationConfig &location = FindMostMatchingLocation(config, req.GetPath());
+	std::string root = location.root.empty() ? "./www" : location.root;
 	std::string fullPath = root + req.GetPath();
 
 	if (remove(fullPath.c_str()) != 0)

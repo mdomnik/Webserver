@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:59:47 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 14:26:23 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,6 +238,45 @@ void ServerManager::RunLoop()
 		CheckTimeouts();
 	}
 	ShutdownServers(); //interrupted, shutdown servers
+}
+
+void ServerManager::RunLoopStep()
+{
+	struct epoll_event events[MAX_EVENTS];
+
+	// Wait for events
+	int num = epoll_wait(_epollFD, events, MAX_EVENTS, 100); // 100 ms timeout for non-blocking
+	if (num < 0) // if error
+	{
+		if (errno == EINTR) // interrupted by signal restart loop
+			return;
+		throw std::runtime_error("Server Manager | epoll_wait failed");
+	}
+
+	for (int i = 0; i < num; ++i) // for each event
+	{
+		int fileDescriptor = events[i].data.fd;
+		
+		bool isListening = false;
+		for (size_t j = 0; j < _servers.size(); ++j) // check if it's a listening socket
+		{
+			const std::vector<int>& socketFDs = _servers[j].GetSocketFDs();
+			for (size_t k = 0; k < socketFDs.size(); ++k)
+			{
+				if (fileDescriptor == socketFDs[k])
+				{
+					isListening = true;
+					HandleNewConnections(socketFDs[k], _servers[j]); // handle new connections
+					break;
+				}
+			}
+			if (isListening)
+				break;
+		}
+		if (isListening)
+			continue;
+		HandleClientActivity(fileDescriptor); // handle client activity
+	}
 }
 
 // Shuts down all servers and cleans up resources

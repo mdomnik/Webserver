@@ -1,28 +1,74 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width,initial-scale=1" />
-	<title>Web Server</title>
-	<link rel="icon" type="image/x-icon" href="/images/42logo.png">
-	<!-- Link to modular assets (create these files) -->
-	<link rel="stylesheet" href="css/stylenew.css">
-	<script type="module" src="js/main.js" defer></script>
+    <meta charset="UTF-8">
+    <title>WebServ 🌐</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
-<header class="Head">
-		<a href="index.html" id="Home" class="boox">Home</a>
-		<a href="uploadpage.html" class="boox">Upload</a>
-</header>
-<body class="Body">
-	<div class="MainPage">
-		<div class="Inner"> Meow</div>
-		<div class="Inner"> Welcome to our Web Server Project! </div>
-		<div class="Inner"> Meow</div>
-	</div>
-	<!-- Minimal inline example to stamp the template (move to js/main.js for modularity) -->
+<body>
+    <div class="background">
+        <div class="glass-card">
+            <header>
+                <img src="/images/42logo.png" alt="42 Logo" class="logo" />
+                <h1>WebServ</h1>
+                <p>A fast and minimalist C++ web server project.</p>
+            </header>
+
+            <main>
+                <!-- Project Team -->
+                <section>
+                    <h2>👥 Project Team</h2>
+                    <ul class="team">
+                        <li><a href="https://github.com/mdomnik" target="_blank">mdomnik</a></li>
+                        <li><a href="https://github.com/Fernandajo" target="_blank">Fernandajo</a></li>
+                        <li><a href="https://github.com/moojig12" target="_blank">moojig12</a></li>
+                    </ul>
+                </section>
+
+                <hr>
+
+                <!-- Message Board -->
+                <section>
+                    <h2>💬 Leave a Message</h2>
+                    <form method="POST" action="/cgi-bin/messages.py" class="form-block">
+                        <input type="text" name="username" placeholder="Your name..." required />
+                        <input type="text" name="message" placeholder="Your message..." required />
+                        <button type="submit">Post Message</button>
+                    </form>
+                    <a href="/cgi-bin/messages.py" class="button-link">📄 View Message Board</a>
+                </section>
+
+                <hr>
+
+                <!-- Image Upload -->
+                <section>
+                    <h2>📸 Upload an Image</h2>
+                    <form method="POST" enctype="multipart/form-data" action="/cgi-bin/upload.py" class="form-block">
+                        <input type="file" name="file" accept="image/*" required />
+                        <button type="submit">Upload Image</button>
+                    </form>
+                    <a href="/cgi-bin/gallery.py" class="button-link">🖼 View Uploaded Images</a>
+                </section>
+
+                <hr>
+
+                <!-- CGI Test -->
+                <section>
+                    <h2>🧠 CGI Test</h2>
+                    <a href="/cgi-bin/hello.py" class="button-link">Run GET CGI Script</a>
+                    <form method="POST" action="/cgi-bin/hello.py" class="form-block">
+                        <input type="text" name="input" placeholder="Send something to the CGI script..." required />
+                        <button type="submit">Send POST</button>
+                    </form>
+                </section>
+            </main>
+
+            <footer>
+                <p>&copy; 2025 WebServ — Crafted with ❤️ in C++.</p>
+            </footer>
+        </div>
+    </div>
 </body>
 <footer class="Foot">WebServer by Maciej Naraa and Fernanda. Crafted with ❤️ and C++.</footer>
 </html>
