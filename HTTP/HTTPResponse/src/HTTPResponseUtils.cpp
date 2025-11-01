@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:17:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 22:21:00 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 13:49:51 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,4 +188,22 @@ std::string HTTPResponse::ResponseFromCGI(const std::string &out, const std::str
 	SetStatus(status, httpversion, statusText);
 	SetBody(bodyPart);
 	return (ResponseToString());
+}
+
+const LocationConfig& HTTPResponse::FindMostMatchingLocation(const ServerConfig &serverConfig, const std::string &requestPath)
+{
+	const LocationConfig* bestMatch = &serverConfig.locations[0];
+
+	size_t Length = 0;
+
+	for (size_t i = 0; i < serverConfig.locations.size(); ++i)
+	{
+		const LocationConfig& loc = serverConfig.locations[i];
+		if (requestPath.find(loc.path) == 0 && loc.path.size() > Length)
+		{
+			bestMatch = &loc;
+			Length = loc.path.size();
+		}
+	}
+	return (*bestMatch);
 }

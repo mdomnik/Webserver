@@ -49,6 +49,7 @@
 		"typeinfo": "cpp",
 		"cstring": "cpp",
 		"set": "cpp",
-		"ctime": "cpp"
+		"ctime": "cpp",
+		"csignal": "cpp"
 	}
 }

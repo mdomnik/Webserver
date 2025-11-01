@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:08:58 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 17:17:38 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 12:57:22 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ class ServerManager
 
 		// Server operations
 		void RunLoop(); // Main event loop
+		void RunLoopStep();
 		void ShutdownServers(); // Shutdown all servers
 };
 

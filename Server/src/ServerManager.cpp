@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/31 16:42:52 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 13:03:31 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,15 +188,15 @@ void ServerManager::RunLoop()
 	while (true)
 	{
 		// Wait for events
-		int numberOfEvents = epoll_wait(_epollFD, events, MAX_EVENTS, -1); // add function that handles timeouts later
-		if (numberOfEvents < 0) // if error
+		int num = epoll_wait(_epollFD, events, MAX_EVENTS, -1); // add function that handles timeouts later
+		if (num < 0) // if error
 		{
 			if (errno == EINTR) // interrupted by signal restart loop
 				continue;
 			throw std::runtime_error("Server Manager | epoll_wait failed");
 		}
 
-		for (int i = 0; i < numberOfEvents; ++i) // for each event
+		for (int i = 0; i < num; ++i) // for each event
 		{
 			int fileDescriptor = events[i].data.fd;
 			
@@ -222,6 +222,45 @@ void ServerManager::RunLoop()
 		}
 	}
 	ShutdownServers(); //interrupted, shutdown servers
+}
+
+void ServerManager::RunLoopStep()
+{
+	struct epoll_event events[MAX_EVENTS];
+
+	// Wait for events
+	int num = epoll_wait(_epollFD, events, MAX_EVENTS, 100); // 100 ms timeout for non-blocking
+	if (num < 0) // if error
+	{
+		if (errno == EINTR) // interrupted by signal restart loop
+			return;
+		throw std::runtime_error("Server Manager | epoll_wait failed");
+	}
+
+	for (int i = 0; i < num; ++i) // for each event
+	{
+		int fileDescriptor = events[i].data.fd;
+		
+		bool isListening = false;
+		for (size_t j = 0; j < _servers.size(); ++j) // check if it's a listening socket
+		{
+			const std::vector<int>& socketFDs = _servers[j].GetSocketFDs();
+			for (size_t k = 0; k < socketFDs.size(); ++k)
+			{
+				if (fileDescriptor == socketFDs[k])
+				{
+					isListening = true;
+					HandleNewConnections(socketFDs[k], _servers[j]); // handle new connections
+					break;
+				}
+			}
+			if (isListening)
+				break;
+		}
+		if (isListening)
+			continue;
+		HandleClientActivity(fileDescriptor); // handle client activity
+	}
 }
 
 // Shuts down all servers and cleans up resources

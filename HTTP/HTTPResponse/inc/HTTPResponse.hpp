@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:20 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/31 15:35:26 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 13:47:47 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ class HTTPResponse
 		bool IsFile(const std::string &path);
 		bool IsEndOfString(const std::string &str, const std::string &endpart);
 		std::string buildAutoIndexPage(const std::string &path, const std::string &uri);
-		std::string readFileContent(const std::string &path);
+		const LocationConfig& FindMostMatchingLocation(const ServerConfig &serverConfig, const std::string &requestPath);
 		
 		// Method handlers
 		std::string HandleGET(const HTTPRequest &req, const ServerConfig &conf);
