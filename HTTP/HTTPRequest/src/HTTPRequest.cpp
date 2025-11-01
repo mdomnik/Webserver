@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 20:04:25 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 20:15:18 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,7 +130,7 @@ ParseStatus HTTPRequest::ParseRequestChunk(const std::string &chunk)
 	{
 		if (_state == RequestLineState) //checks which state we are in
 		{
-			//std::cout << "buffer: " << _buffer << std::endl;
+			std::cout << "buffer: " << _buffer << std::endl;
 			ParseStatus status = ParseRequestLine(); //parses the current stage
 			if (status != Success)
 				return (status);

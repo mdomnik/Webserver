@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseUtils.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:17:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 16:27:04 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 21:08:01 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,9 +193,9 @@ std::string HTTPResponse::ResponseFromCGI(const std::string &out, const std::str
 const LocationConfig& HTTPResponse::FindMostMatchingLocation(const ServerConfig &serverConfig, const std::string &requestPath)
 {
 	const LocationConfig* bestMatch = &serverConfig.locations[0];
-
+	
 	size_t Length = 0;
-
+	
 	for (size_t i = 0; i < serverConfig.locations.size(); ++i)
 	{
 		const LocationConfig& loc = serverConfig.locations[i];
@@ -205,11 +205,14 @@ const LocationConfig& HTTPResponse::FindMostMatchingLocation(const ServerConfig 
 			Length = loc.path.size();
 		}
 	}
+	std::cout << "Finding location for path: " << bestMatch->path << std::endl;
 	return (*bestMatch);
 }
 
 bool HTTPResponse::IsMethodAllowed(const LocationConfig &location, const std::string &method)
 {
+	if (method != "GET" && method != "POST" && method != "DELETE")
+		return (false);
     if (location.methods.empty())
         return (true);
     for (size_t i = 0; i < location.methods.size(); ++i)

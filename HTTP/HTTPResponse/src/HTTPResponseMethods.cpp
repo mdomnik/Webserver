@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseMethods.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 14:31:52 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 22:43:24 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ static std::string URLDecode(const std::string &src)
         else
             decoded += src[i];
     }
+	// std::cout << "Decoded URL: " << decoded << std::endl;
     return decoded;
 }
 
@@ -40,7 +41,9 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 	std::string path = URLDecode(req.GetPath());
 	const LocationConfig &location = FindMostMatchingLocation(config, path);
 	std::string root = location.root.empty() ? "./www" : location.root;
+	std::cout << "Location root: " << root << " and path " << path << std::endl;
 	std::string fullPath = root + path;
+	std::cout << "Handling GET for path: " << fullPath << std::endl;
 
 	if (!location.cgiExtension.empty() && fullPath.size() >= location.cgiExtension.size() && fullPath.substr(fullPath.size() - location.cgiExtension.size()) == location.cgiExtension)
 	{
@@ -48,12 +51,13 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 		{
 			CGIHandler cgi(fullPath, req, location);
 			std::string cgiOutput = cgi.Execute();
-
+			// std::cout << cgiOutput << std::endl;
 			if (cgiOutput.empty())
 			{
 				std::string customPage = LoadErrorPage(404, config);
 				if (!customPage.empty())
 				{
+					std::cout << "CGI output empty, serving custom 404 page." << std::endl;
 					SetStatus(404, version, "Not Found");
 					SetHeader("Content-Type", "text/html");
 					SetBody(customPage);
@@ -62,6 +66,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 				SetResponseToError(404, version, "Not Found");
 				return (ResponseToString());
 			}
+			std::cout << "CGI executed successfully." << std::endl;
 			return ResponseFromCGI(cgiOutput, version);
 		}
 		catch(const std::exception& e)
@@ -75,15 +80,18 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 	
 	if (IsDirectory(fullPath))
 	{
+		std::cout << "Path is a directory." << std::endl;
 		const LocationConfig &location = FindMostMatchingLocation(config, path);
-		if (location.autoIndex)
+		if (location.index.empty())
 		{
 			SetStatus(200, version, "OK");
 			SetHeader("Content-Type", "text/html");
 			SetBody(buildAutoIndexPage(fullPath, path));
 			return (ResponseToString());
 		}
-		fullPath += "/" + location.index;
+		if (!location.index.empty())
+			fullPath += "/" + location.index;
+		std::cout << "Index file path: " << fullPath << std::endl;
 	}
 
 	if (!IsFile(fullPath))
@@ -183,8 +191,8 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 		return (ResponseToString());
 	}
 	
-	std::string destanation = location.uploadStore + "/upload.txt";
-	std::ofstream outFile(destanation.c_str(), std::ios::out | std::ios::binary);
+	std::string destination = location.uploadStore + "/upload.txt";
+	std::ofstream outFile(destination.c_str(), std::ios::out | std::ios::binary);
 	if (!outFile.is_open())
 	{
 		std::string customPage = LoadErrorPage(500, config);
@@ -203,7 +211,7 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 
 	SetStatus(201, version, "Created");
 	SetHeader("Content-Type", "text/html");
-	SetBody("File uploaded successfully to " + destanation);
+	SetBody("File uploaded successfully to " + destination);
 
 	return (ResponseToString());
 }
