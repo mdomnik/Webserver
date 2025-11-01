@@ -3,3 +3,7 @@ FATAL ERROR ON LAST TEST: bad status code
 
  - add client_max_body_size to location
 
+ - implement 405 Method not allowed. Currently  going into 403 Forbidden 
+ - implement checker for methods that we don't handle. Test HEAD http://localhost:8080/
+2025/11/01 15:50:57 Unsolicited response received on idle HTTP channel starting with "HTTP/1.1 400 Bad Request\r\nContent-Length: 93\r\nContent-Type: text/html\r\n\r\n<html><head><title>400 Bad Request</title></head><body><h1>400 Bad Request</h1></body></html>"; err=<nil>
+FATAL ERROR ON LAST TEST: Head "http://localhost:8080/": net/http: HTTP/1.x transport connection broken: write tcp 127.0.0.1:58070->127.0.0.1:8080: write: broken pipe

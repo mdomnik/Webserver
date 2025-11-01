@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 14:59:05 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 15:30:25 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,7 +139,6 @@ void ServerManager::HandleClientActivity(int client_fd)
 	// Parse the HTTP request chunk
 	HTTPRequest& parser = _clientParsers[client_fd];
 	ParseStatus status = parser.ParseRequestChunk(chunk);
-	_clientLastActivity[client_fd] = std::time(NULL); // COME BACK!!!!!!!!!!!!
 
 	if (status == Incomplete)
 	{

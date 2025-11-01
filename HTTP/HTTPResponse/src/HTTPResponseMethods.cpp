@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseMethods.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:51:54 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 15:51:18 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
