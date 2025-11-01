@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 12:58:50 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 16:53:49 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/01 19:59:52 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ enum ParseState
 	RequestLineState,
 	HeadersState,
 	BodyState,
+	ChunkedBodyState,
 	DoneState,
 	ErrorState
 };
@@ -90,6 +91,7 @@ class HTTPRequest
 		ParseStatus ParseRequestLine();
 		ParseStatus ParseHeaders();
 		ParseStatus ParseBody();
+		ParseStatus ParseChunkedBody();
 
 		// content length validation
 		ParseStatus ValidateContentLength(size_t &contentLength) const;
