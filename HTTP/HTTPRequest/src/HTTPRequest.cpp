@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:52:31 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 20:01:32 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 // ==== Constructor ====
 HTTPRequest::HTTPRequest() : _method(), _path(), _httpVersion(), _headers(), _body(), _state(RequestLineState), _buffer(), _errorMessage(), _maxBodySize(DEFAULT_MAX_BODY_SIZE) {}
 
+void HTTPRequest::setMaxBodySize(size_t size) { _maxBodySize = size; }
 
 // Preparing the class for a new erquest
 void HTTPRequest::ResetRequest()
@@ -117,6 +118,7 @@ bool HTTPRequest::IsKeepAlive() const
 }
 
 
+
 // ==== Main Parsing Loop ====
 
 ParseStatus HTTPRequest::ParseRequestChunk(const std::string &chunk)
@@ -128,6 +130,7 @@ ParseStatus HTTPRequest::ParseRequestChunk(const std::string &chunk)
 	// Main parsing loop
 	while (true)
 	{
+		std::cout << _maxBodySize << "MAXBODY" << std::endl;
 		if (_state == RequestLineState) //checks which state we are in
 		{
 			std::cout << "buffer: " << _buffer << std::endl;

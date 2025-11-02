@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:48:05 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 20:01:42 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,6 +138,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 	std::string chunk(buffer, bytesRead);
 	// Parse the HTTP request chunk
 	HTTPRequest& parser = _clientParsers[client_fd];
+	parser.setMaxBodySize(_clientToServer[client_fd]->GetServerConfig().clientMaxBodySize);
 	ParseStatus status = parser.ParseRequestChunk(chunk);
 
 	if (status == Incomplete)

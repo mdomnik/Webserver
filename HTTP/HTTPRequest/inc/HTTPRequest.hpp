@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 12:58:50 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:46:26 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 20:01:08 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,8 @@ class HTTPRequest
 		std::string GetHeader(const std::string& key) const;
 		bool HasHeader(const std::string& key) const;
 		bool IsKeepAlive() const;
+
+		void setMaxBodySize(size_t size);
 
 		// Parsing stages
 		ParseStatus ParseRequestLine();
