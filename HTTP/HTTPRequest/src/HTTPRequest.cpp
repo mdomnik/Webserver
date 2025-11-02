@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:11:04 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 19:52:31 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -365,12 +365,13 @@ ParseStatus HTTPRequest::ParseBody()
 
 	if (_buffer.size() < contentLength) //if body not fully received
 		return (Incomplete);
-	
+	std::cout << _maxBodySize << "MAXBODY" << std::endl;
+
 	if (contentLength > _maxBodySize) //if body too large
 	{
 		_errorMessage = "Body size exceeds maximum allowed";
 		_state = ErrorState;
-		return (BadRequest);
+		return (PayloadExceeded);
 	}
 
 	_body.assign(_buffer, 0, contentLength); //extract body
@@ -416,11 +417,12 @@ ParseStatus HTTPRequest::ParseChunkedBody()
 		// Append chunk data to body
 		_body.append(_buffer, 0, chunkSize);
 
+		std::cout << _maxBodySize << "MAXBODY" << std::endl;
 		if (_body.size() > _maxBodySize) // Check max body size
 		{
 			_errorMessage = "Body size exceeds maximum allowed";
 			_state = ErrorState;
-			return (BadRequest);
+			return (PayloadExceeded);
 		}
 
 		// Remove chunk data + CRLF

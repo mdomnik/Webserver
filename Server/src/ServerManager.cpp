@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:13:54 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 19:48:05 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,6 +152,15 @@ void ServerManager::HandleClientActivity(int client_fd)
 		CloseClient(client_fd);
 		return;
 	}
+	if (status == PayloadExceeded)
+	{
+		HTTPResponse error;
+		error.SetResponseToError(413, "HTTP/1.1", "Payload too large");
+		std::string notimplresponse = error.ResponseToString();
+		send(client_fd, notimplresponse.c_str(), notimplresponse.size(), 0);
+		CloseClient(client_fd);
+		return;
+	}
 	if (status != Success || !parser.IsComplete()) // If there is any error found in parsing
 	{
 		// notify the server admin and close the connection
@@ -166,7 +175,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 
 	const ServerConfig &config = _clientToServer[client_fd]->GetServerConfig();
 	HTTPResponse response;
-	// bool keepAlive = parser.IsKeepAlive();
+	bool keepAlive = parser.IsKeepAlive();
 	// response.SetHeader("Connection", keepAlive ? "keep-alive" : "close");
 	std::string httpResponse = response.GenerateResponse(parser, config);
 	// Send the response back to the client
@@ -174,16 +183,16 @@ void ServerManager::HandleClientActivity(int client_fd)
 
 	parser.ResetRequest(); // Reset parser for next request
 	// CloseClient(client_fd);
-	// if (keepAlive)
-	// {
-	// 	parser.ResetRequest();
-	// 	_clientLastActivity[client_fd] = std::time(NULL);
-	// 	std::cout << "Server Manager | Keep-Alive active for client fd: " << client_fd << std::endl;
-	// }
-	// else
-	// {
-	// 	CloseClient(client_fd);
-	// }
+	if (keepAlive)
+	{
+		parser.ResetRequest();
+		_clientLastActivity[client_fd] = std::time(NULL);
+		std::cout << "Server Manager | Keep-Alive active for client fd: " << client_fd << std::endl;
+	}
+	else
+	{
+		CloseClient(client_fd);
+	}
 }
 
 // Closes a client connection and cleans up

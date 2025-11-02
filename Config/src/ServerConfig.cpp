@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:31:18 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:10:42 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 19:35:04 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,11 @@ LocationConfig::LocationConfig() : autoIndex(false), uploadEnable(false)
 {
     path = "/";
     root = "";
-    index = "";
     uploadStore = "/tmp";
 }
 
 // Default constructor for server blocks
-ServerConfig::ServerConfig() : serverName("Default") ,clientMaxBodySize(10485760), _keepAliveTimeout(10)
+ServerConfig::ServerConfig() : serverName("Default") ,clientMaxBodySize(100000000), _keepAliveTimeout(10)
 {
 	errorPages[404] = "/errors/404.html";
 }

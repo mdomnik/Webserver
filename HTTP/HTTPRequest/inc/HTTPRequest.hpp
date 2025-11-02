@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 12:58:50 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:10:51 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 19:46:26 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,8 @@ enum ParseStatus
 	Incomplete,
 	BadRequest,
 	NotImplemented,
-	VersionNotSupported
+	VersionNotSupported,
+	PayloadExceeded
 };
 
 enum ParseState

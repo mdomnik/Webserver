@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:06:52 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 19:32:36 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,7 +193,6 @@ LocationConfig ConfigParser::ParseLocation()
 	LocationConfig loc;
 
 	loc.path = Next();
-	loc.index = "";
 	Expect("{");
 
 	while (Peek() != "}")
