@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:08:58 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 14:48:49 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 21:12:54 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ class ServerManager
 		std::vector<Server>	_servers; // list of managed servers
 		std::map<int, Server*> _clientToServer; // map client fds to their servers
 		std::map<int, HTTPRequest> _clientParsers; // map client fds to their HTTP request parsers
-		std::map<int, time_t> _clientLastActivity; // map to track the last activity of each connected client
+		// std::map<int, time_t> _clientLastActivity; // map to track the last activity of each connected client
 		
 		// initialization methods
 		void InitServers(const std::vector<ServerConfig>& serverConfigs);
@@ -48,7 +48,7 @@ class ServerManager
 		void HandleNewConnections(int listening, Server &server);
 		void HandleClientActivity(int clientFD);
 		void CloseClient(int clientFD);
-		void CheckTimeouts();
+		// void CheckTimeouts();
 
 	public:
 		// Constructor and Destructor

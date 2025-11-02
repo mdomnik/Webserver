@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:17:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:33:48 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 23:18:56 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,102 +92,233 @@ std::string HTTPResponse::buildAutoIndexPage(const std::string &Path, const std:
 	return (html.str());
 }
 
+// std::string HTTPResponse::ResponseFromCGI(const std::string &out, const std::string &httpversion)
+// {
+// 	// Split CGI output into headers and body
+// 	size_t pos = out.find(DOUBLECRLF);
+// 	size_t length = 4;
+// 	if (pos == std::string::npos)
+// 	{
+// 		pos = out.find("\n\n");
+// 		length = 2;
+// 	}
+
+// 	std::string headerPart;
+// 	std::string bodyPart;
+
+// 	// if no headers found, treat entire output as body
+// 	if (pos == std::string::npos)
+// 	{
+// 		headerPart = "";
+// 		bodyPart = out;
+// 	}
+// 	else
+// 	{
+// 		headerPart = out.substr(0, pos);
+// 		bodyPart = out.substr(pos + length);
+// 	}
+
+// 	// default values
+// 	int status = 200; 
+// 	std::string statusText = "OK";
+
+// 	size_t i = 0; //parse headers
+// 	while (i < headerPart.size())
+// 	{
+// 		size_t end = headerPart.find(CRLF, i); //find end of line
+// 		size_t forward = 2; //default forward for CRLF
+// 		if (end == std::string::npos) //if no CRLF found, try LF
+// 		{
+// 			end = headerPart.find('\n', i); //find end of line with LF
+// 			if (end == std::string::npos) //if no LF found either, use entire remaining string
+// 				end = headerPart.size();
+// 			forward = (end < headerPart.size()) ? 1 : 0; //adjust forward for LF
+// 		}
+
+// 		std::string line = headerPart.substr(i, end - i); //isolate line
+// 		i = (end < headerPart.size()) ? end + forward : headerPart.size(); //move iterator forward
+
+// 		if (line.empty()) //if empty line, skip
+// 			continue;
+		
+// 		if (line.size() > 7 && line.substr(0, 7) == "Status:") //if status line
+// 		{
+// 			std::string remain = line.substr(7); //get remaining part
+// 			size_t k = 0;
+// 			while (k < remain.size() && (remain[k] == ' ' || remain[k] == '\t')) //skip whitespace
+// 				++k;
+// 			remain = remain.substr(k);
+
+// 			std::istringstream statusStream(remain);
+// 			int code = 0;
+// 			statusStream >> code; //extract status code
+// 			if (code >= 100 && code <= 599) //validate code range
+// 			{
+// 				status = code;
+// 				std::string after;
+// 				std::getline(statusStream, after);
+// 				if (!after.empty() && after[0] == ' ')
+// 					after.erase(0, 1);
+// 				if (!after.empty())
+// 					statusText = after; //extract status text
+// 			}
+// 			continue;
+// 		}
+
+// 		// parse regular header line
+// 		size_t colon = line.find(':'); //find delimiter
+// 		if (colon == std::string::npos) 
+// 			continue;
+// 		std::string key = line.substr(0, colon);
+// 		std::string value = line.substr(colon + 1);
+
+// 		size_t z = 0; //trim whitespace from value
+// 		while (z < value.size() && (value[z] == ' ' || value[z] == '\t'))
+// 			++z;
+// 		value = value.substr(z);
+		
+// 		if (!key.empty() && !value.empty())
+// 			SetHeader(key, value); //set header
+// 	}
+	
+// 		std::ostringstream l;
+// 		l << bodyPart.size();
+// 		SetHeader("content-length", l.str());
+		
+// 	SetStatus(status, httpversion, statusText);
+// 	SetBody(bodyPart);
+// 	return (ResponseToString());
+// }
 std::string HTTPResponse::ResponseFromCGI(const std::string &out, const std::string &httpversion)
 {
-	// Split CGI output into headers and body
-	size_t pos = out.find(DOUBLECRLF);
-	size_t length = 4;
-	if (pos == std::string::npos)
-	{
-		pos = out.find("\n\n");
-		length = 2;
-	}
+    // Split CGI output into headers and body
+    size_t pos = out.find(DOUBLECRLF);
+    size_t length = 4;
+    if (pos == std::string::npos)
+    {
+        pos = out.find("\n\n");
+        length = 2;
+    }
 
-	std::string headerPart;
-	std::string bodyPart;
+    std::string headerPart;
+    std::string bodyPart;
 
-	// if no headers found, treat entire output as body
-	if (pos == std::string::npos)
-	{
-		headerPart = "";
-		bodyPart = out;
-	}
-	else
-	{
-		headerPart = out.substr(0, pos);
-		bodyPart = out.substr(pos + length);
-	}
+    if (pos == std::string::npos)
+    {
+        headerPart = "";
+        bodyPart = out;
+    }
+    else
+    {
+        headerPart = out.substr(0, pos);
+        bodyPart = out.substr(pos + length);
+    }
 
-	// default values
-	int status = 200; 
-	std::string statusText = "OK";
+    // --- Defaults ---
+    int status = 200;
+    std::string statusText = "OK";
 
-	size_t i = 0; //parse headers
-	while (i < headerPart.size())
-	{
-		size_t end = headerPart.find(CRLF, i); //find end of line
-		size_t forward = 2; //default forward for CRLF
-		if (end == std::string::npos) //if no CRLF found, try LF
-		{
-			end = headerPart.find('\n', i); //find end of line with LF
-			if (end == std::string::npos) //if no LF found either, use entire remaining string
-				end = headerPart.size();
-			forward = (end < headerPart.size()) ? 1 : 0; //adjust forward for LF
-		}
+    // --- Parse CGI headers ---
+    size_t i = 0;
+    std::map<std::string, std::string> cgiHeaders;
 
-		std::string line = headerPart.substr(i, end - i); //isolate line
-		i = (end < headerPart.size()) ? end + forward : headerPart.size(); //move iterator forward
+    while (i < headerPart.size())
+    {
+        size_t end = headerPart.find(CRLF, i);
+        size_t forward = 2;
+        if (end == std::string::npos)
+        {
+            end = headerPart.find('\n', i);
+            forward = (end < headerPart.size()) ? 1 : 0;
+        }
 
-		if (line.empty()) //if empty line, skip
-			continue;
-		
-		if (line.size() > 7 && line.substr(0, 7) == "Status:") //if status line
-		{
-			std::string remain = line.substr(7); //get remaining part
-			size_t k = 0;
-			while (k < remain.size() && (remain[k] == ' ' || remain[k] == '\t')) //skip whitespace
-				++k;
-			remain = remain.substr(k);
+        std::string line = headerPart.substr(i, end - i);
+        i = (end < headerPart.size()) ? end + forward : headerPart.size();
 
-			std::istringstream statusStream(remain);
-			int code = 0;
-			statusStream >> code; //extract status code
-			if (code >= 100 && code <= 599) //validate code range
-			{
-				status = code;
-				std::string after;
-				std::getline(statusStream, after);
-				if (!after.empty() && after[0] == ' ')
-					after.erase(0, 1);
-				if (!after.empty())
-					statusText = after; //extract status text
-			}
-			continue;
-		}
+        if (line.empty())
+            continue;
 
-		// parse regular header line
-		size_t colon = line.find(':'); //find delimiter
-		if (colon == std::string::npos) 
-			continue;
-		std::string key = line.substr(0, colon);
-		std::string value = line.substr(colon + 1);
+        // --- Handle Status: ---
+        if (line.size() > 7 && line.substr(0, 7) == "Status:")
+        {
+            std::string remain = line.substr(7);
+            size_t k = 0;
+            while (k < remain.size() && (remain[k] == ' ' || remain[k] == '\t'))
+                ++k;
+            remain = remain.substr(k);
 
-		size_t z = 0; //trim whitespace from value
-		while (z < value.size() && (value[z] == ' ' || value[z] == '\t'))
-			++z;
-		value = value.substr(z);
-		
-		if (!key.empty() && !value.empty())
-			SetHeader(key, value); //set header
-	}
-	
-		std::ostringstream l;
-		l << bodyPart.size();
-		SetHeader("content-length", l.str());
-		
-	SetStatus(status, httpversion, statusText);
-	SetBody(bodyPart);
-	return (ResponseToString());
+            std::istringstream statusStream(remain);
+            int code = 0;
+            statusStream >> code;
+            if (code >= 100 && code <= 599)
+            {
+                status = code;
+                std::string after;
+                std::getline(statusStream, after);
+                if (!after.empty() && after[0] == ' ')
+                    after.erase(0, 1);
+                if (!after.empty())
+                    statusText = after;
+            }
+            continue;
+        }
+
+        // --- Regular header ---
+        size_t colon = line.find(':');
+        if (colon == std::string::npos)
+            continue;
+
+        std::string key = line.substr(0, colon);
+        std::string value = line.substr(colon + 1);
+
+        // Trim leading spaces from value
+        size_t z = 0;
+        while (z < value.size() && (value[z] == ' ' || value[z] == '\t'))
+            ++z;
+        value = value.substr(z);
+
+        if (!key.empty() && !value.empty())
+            cgiHeaders[key] = value;
+    }
+
+    // --- Decide on transfer mode ---
+    bool isChunked = false;
+    for (std::map<std::string, std::string>::iterator it = cgiHeaders.begin();
+         it != cgiHeaders.end(); ++it)
+    {
+        if (strcasecmp(it->first.c_str(), "Transfer-Encoding") == 0 &&
+            strcasecmp(it->second.c_str(), "chunked") == 0)
+        {
+            isChunked = true;
+            break;
+        }
+    }
+
+    // --- Apply headers to response ---
+    for (std::map<std::string, std::string>::iterator it = cgiHeaders.begin();
+         it != cgiHeaders.end(); ++it)
+        SetHeader(it->first, it->second);
+
+    // --- Add or skip Content-Length ---
+    if (!isChunked && cgiHeaders.find("Content-Length") == cgiHeaders.end())
+    {
+        std::ostringstream l;
+        l << bodyPart.size();
+        SetHeader("Content-Length", l.str());
+    }
+
+    // --- Ensure consistency ---
+    if (isChunked)
+    {
+        // Remove any existing Content-Length just in case
+        RemoveHeader("Content-Length");
+    }
+
+    // --- Finalize ---
+    SetStatus(status, httpversion, statusText);
+    SetBody(bodyPart);
+
+    return ResponseToString();
 }
 
 const LocationConfig& HTTPResponse::FindMostMatchingLocation(const ServerConfig &serverConfig, const std::string &requestPath)
@@ -213,16 +344,36 @@ const LocationConfig& HTTPResponse::FindMostMatchingLocation(const ServerConfig 
 	return (*bestMatch);
 }
 
-bool HTTPResponse::IsMethodAllowed(const LocationConfig &location, const std::string &method)
+bool HTTPResponse::IsMethodAllowed(const LocationConfig &location, const std::string &method, const std::string &path)
 {
+	// 🟢 1. Validate known methods
 	if (method != "GET" && method != "POST" && method != "DELETE")
-		return (false);
-    if (location.methods.empty())
-        return (true);
-    for (size_t i = 0; i < location.methods.size(); ++i)
-    {
-        if (location.methods[i] == method)
-            return (true);
-    }
-    return (false);
+		return false;
+
+	// 🟢 2. If it's a CGI request, always allow GET and POST
+	if (!location.cgiExtension.empty()
+		&& path.size() >= location.cgiExtension.size()
+		&& path.substr(path.size() - location.cgiExtension.size()) == location.cgiExtension)
+	{
+		if (method == "GET" || method == "POST")
+			return true;
+	}
+
+	// 🟢 3. If location has no restrictions, allow all
+	if (location.methods.empty())
+		return true;
+
+	// 🟢 4. Normal method checking
+	for (size_t i = 0; i < location.methods.size(); ++i)
+	{
+		if (location.methods[i] == method)
+			return true;
+	}
+	return false;
+}
+
+ void HTTPResponse::RemoveHeader(const std::string &key) {
+    std::map<std::string, std::string>::iterator it = _headers.find(key);
+    if (it != _headers.end())
+        _headers.erase(it);
 }

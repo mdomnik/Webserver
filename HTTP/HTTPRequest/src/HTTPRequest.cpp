@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 20:01:32 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/02 22:51:35 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,14 +126,13 @@ ParseStatus HTTPRequest::ParseRequestChunk(const std::string &chunk)
 	// Append new chunk to buffer
 	if (!chunk.empty())
 		_buffer.append(chunk);
+		// std::cout << "buffer: " << _buffer << std::endl;
 	
 	// Main parsing loop
 	while (true)
 	{
-		std::cout << _maxBodySize << "MAXBODY" << std::endl;
 		if (_state == RequestLineState) //checks which state we are in
 		{
-			std::cout << "buffer: " << _buffer << std::endl;
 			ParseStatus status = ParseRequestLine(); //parses the current stage
 			if (status != Success)
 				return (status);
@@ -329,6 +328,7 @@ ParseStatus HTTPRequest::ParseHeaders()
 	std::map<std::string, std::string>::const_iterator enc = _headers.find("transfer-encoding");
 	if (enc != _headers.end())
 	{
+		std::cout << "ENTERED TRANSFER-ENCODING" << std::endl;
 		std::string val = enc->second;
 		for (size_t i = 0; i < val.size(); ++i)
 			val[i] = std::tolower(static_cast<unsigned char>(val[i]));
@@ -384,55 +384,140 @@ ParseStatus HTTPRequest::ParseBody()
 }
 
 // Parses the Chunked Body
+// ParseStatus HTTPRequest::ParseChunkedBody()
+// {
+// 	while (true)
+// 	{
+// 		// Find CRLF marking end of current chunk size
+// 		size_t crlfPos = _buffer.find(CRLF);
+// 		if (crlfPos == std::string::npos)
+// 			return Incomplete;
+
+// 		// Extract chunk size in hex
+// 		std::string sizeLine = _buffer.substr(0, crlfPos);
+// 		size_t chunkSize = 0;
+// 		std::stringstream ss;
+// 		ss << std::hex << sizeLine;
+// 		ss >> chunkSize;
+
+// 		// Remove the size line + CRLF
+// 		_buffer.erase(0, crlfPos + 2);
+
+// 		if (chunkSize == 0)
+// 		{
+// 			// Final chunk (ends with \r\n)
+// 			size_t ending = _buffer.find(CRLF);
+// 			if (ending != std::string::npos)
+// 				_buffer.erase(0, ending + 2);
+// 			_state = DoneState;
+// 			return Success;
+// 		}
+
+// 		// Wait until we have full chunk data + trailing CRLF
+// 		if (_buffer.size() < chunkSize + 2)
+// 			return Incomplete;
+
+// 		// Append chunk data to body
+// 		_body.append(_buffer, 0, chunkSize);
+
+// 		std::cout << _maxBodySize << "MAXBODY" << std::endl;
+// 		if (_body.size() > _maxBodySize) // Check max body size
+// 		{
+// 			_errorMessage = "Body size exceeds maximum allowed";
+// 			_state = ErrorState;
+// 			return (PayloadExceeded);
+// 		}
+
+// 		// Remove chunk data + CRLF
+// 		_buffer.erase(0, chunkSize + 2);
+// 	}
+// 	return (Success);
+// }
+
 ParseStatus HTTPRequest::ParseChunkedBody()
 {
-	while (true)
-	{
-		// Find CRLF marking end of current chunk size
-		size_t crlfPos = _buffer.find(CRLF);
-		if (crlfPos == std::string::npos)
-			return Incomplete;
+    // Try to decode as much as possible from _buffer.
+    size_t pos = 0;
 
-		// Extract chunk size in hex
-		std::string sizeLine = _buffer.substr(0, crlfPos);
-		size_t chunkSize = 0;
-		std::stringstream ss;
-		ss << std::hex << sizeLine;
-		ss >> chunkSize;
+    while (true)
+    {
+        // Find CRLF marking end of chunk-size line
+        size_t endOfSize = _buffer.find(CRLF, pos);
+        if (endOfSize == std::string::npos)
+            return Incomplete; // need more data
 
-		// Remove the size line + CRLF
-		_buffer.erase(0, crlfPos + 2);
+        // Extract size line
+        std::string sizeLine = _buffer.substr(pos, endOfSize - pos);
+        size_t semi = sizeLine.find(';');
+        if (semi != std::string::npos)
+            sizeLine = sizeLine.substr(0, semi);
 
-		if (chunkSize == 0)
-		{
-			// Final chunk (ends with \r\n)
-			size_t ending = _buffer.find(CRLF);
-			if (ending != std::string::npos)
-				_buffer.erase(0, ending + 2);
-			_state = DoneState;
-			return Success;
-		}
+        // Trim spaces
+        while (!sizeLine.empty() && std::isspace(sizeLine[0]))
+            sizeLine.erase(sizeLine.begin());
+        while (!sizeLine.empty() && std::isspace(sizeLine[sizeLine.size() - 1]))
+            sizeLine.erase(sizeLine.end() - 1);
 
-		// Wait until we have full chunk data + trailing CRLF
-		if (_buffer.size() < chunkSize + 2)
-			return Incomplete;
+        if (sizeLine.empty())
+        {
+            _errorMessage = "Invalid chunk size line";
+            _state = ErrorState;
+            return BadRequest;
+        }
 
-		// Append chunk data to body
-		_body.append(_buffer, 0, chunkSize);
+        // Convert from hex
+        size_t chunkSize = 0;
+        std::stringstream ss;
+        ss << std::hex << sizeLine;
+        ss >> chunkSize;
 
-		std::cout << _maxBodySize << "MAXBODY" << std::endl;
-		if (_body.size() > _maxBodySize) // Check max body size
-		{
-			_errorMessage = "Body size exceeds maximum allowed";
-			_state = ErrorState;
-			return (PayloadExceeded);
-		}
+        // Move buffer past the size line + CRLF
+        pos = endOfSize + 2;
 
-		// Remove chunk data + CRLF
-		_buffer.erase(0, chunkSize + 2);
-	}
-	return (Success);
+        // Check for final chunk (size = 0)
+        if (chunkSize == 0)
+        {
+            // Wait for final CRLF or optional trailers
+            size_t trailerEnd = _buffer.find(DOUBLECRLF, pos);
+            if (trailerEnd == std::string::npos)
+            {
+                // Some clients just send one CRLF
+                size_t singleEnd = _buffer.find(CRLF, pos);
+                if (singleEnd == std::string::npos)
+                    return Incomplete; // wait for end
+                _buffer.erase(0, singleEnd + 2);
+            }
+            else
+                _buffer.erase(0, trailerEnd + 4);
+
+            _state = DoneState;
+            return Success;
+        }
+
+        // Make sure the whole chunk data + CRLF is in buffer
+        if (_buffer.size() < pos + chunkSize + 2)
+            return Incomplete;
+
+        // Append this chunk to body
+        _body.append(_buffer, pos, chunkSize);
+
+        // if (_body.size() > _maxBodySize)
+        // {
+        //     _errorMessage = "Body size exceeds maximum allowed";
+        //     _state = ErrorState;
+        //     return PayloadExceeded;
+        // }
+		// std::cout << "current body size: " << _body.size() << std::endl;
+        // Remove this chunk + CRLF from buffer
+        _buffer.erase(0, pos + chunkSize + 2);
+
+        // Reset pos for next loop
+        pos = 0;
+    }
+
+    return Success;
 }
+
 
 // Validates the Content-Length header
 ParseStatus HTTPRequest::ValidateContentLength(size_t &length) const

@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:15:08 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 20:21:40 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,11 +135,7 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 	std::string root = location.root.empty() ? "./www" : location.root;
 	std::string fullPath = root + req.GetPath();
 	
-	if (std::find(location.methods.begin(), location.methods.end(), "POST") == location.methods.end())
-	{
-		return (SetResponseToError(405, version, "Method Not Allowed"), ResponseToString());
-	}
-
+	
 	if (!location.cgiExtension.empty() && fullPath.size() >= location.cgiExtension.size() && fullPath.substr(fullPath.size() - location.cgiExtension.size()) == location.cgiExtension)
 	{
 		try
@@ -156,7 +152,7 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 					SetBody(customPage);
 				}
 				else
-					SetResponseToError(404, version, "Not Found");
+				SetResponseToError(404, version, "Not Found");
 				return (ResponseToString());
 			}
 			return (ResponseFromCGI(cgiOutput, version));
@@ -172,11 +168,15 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 				SetBody(customPage);
 			}
 			else
-				SetResponseToError(500, version, "Internal Server Error");
+			SetResponseToError(500, version, "Internal Server Error");
 			return (ResponseToString());
 		}
 	}
 	
+	if (std::find(location.methods.begin(), location.methods.end(), "POST") == location.methods.end())
+	{
+		return (SetResponseToError(405, version, "Method Not Allowed"), ResponseToString());
+	}
 	if (!location.uploadEnable)
 	{
 		std::string customPage = LoadErrorPage(403, config);

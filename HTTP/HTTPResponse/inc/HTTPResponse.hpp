@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:20 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 16:27:00 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 23:04:19 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ class HTTPResponse
 		bool IsEndOfString(const std::string &str, const std::string &endpart);
 		std::string buildAutoIndexPage(const std::string &path, const std::string &uri);
 		const LocationConfig& FindMostMatchingLocation(const ServerConfig &serverConfig, const std::string &requestPath);
-		bool IsMethodAllowed(const LocationConfig &location, const std::string &method);
+		bool IsMethodAllowed(const LocationConfig &location, const std::string &method, const std::string &path);
 		
 		// Method handlers
 		std::string HandleGET(const HTTPRequest &req, const ServerConfig &conf);
@@ -71,6 +71,6 @@ class HTTPResponse
 		std::string GetStatus() const;
 		std::map<std::string, std::string> GetHeaders() const;
 		std::string GetBody() const;
-		
+		void RemoveHeader(const std::string &key);
 };
 #endif

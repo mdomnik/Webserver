@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 20:01:42 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/02 21:13:26 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void ServerManager::HandleNewConnections(int listening, Server &server)
 		// Map client fd to its appropriate server
 		_clientToServer[client_fd] = &server;
 		_clientParsers[client_fd] = HTTPRequest();
-		_clientLastActivity[client_fd] = std::time(NULL);
+		// _clientLastActivity[client_fd] = std::time(NULL);
 
 		// Add client socket to epoll monitoring
 		struct epoll_event event;
@@ -113,7 +113,7 @@ void ServerManager::HandleNewConnections(int listening, Server &server)
 			close(client_fd);
 			_clientToServer.erase(client_fd);
 			_clientParsers.erase(client_fd);
-			_clientLastActivity.erase(client_fd);
+			// _clientLastActivity.erase(client_fd);
 			continue;
 		}
 
@@ -138,13 +138,13 @@ void ServerManager::HandleClientActivity(int client_fd)
 	std::string chunk(buffer, bytesRead);
 	// Parse the HTTP request chunk
 	HTTPRequest& parser = _clientParsers[client_fd];
-	parser.setMaxBodySize(_clientToServer[client_fd]->GetServerConfig().clientMaxBodySize);
 	ParseStatus status = parser.ParseRequestChunk(chunk);
 
 	if (status == Incomplete)
 	{
 		return; // wait for more data
 	}
+	std::cout << "SENDING " << status << std::endl;
 	if (status == NotImplemented) {
 		HTTPResponse error;
 		error.SetResponseToError(405, "HTTP/1.1", "Method Not allowed");
@@ -157,8 +157,8 @@ void ServerManager::HandleClientActivity(int client_fd)
 	{
 		HTTPResponse error;
 		error.SetResponseToError(413, "HTTP/1.1", "Payload too large");
-		std::string notimplresponse = error.ResponseToString();
-		send(client_fd, notimplresponse.c_str(), notimplresponse.size(), 0);
+		std::string payload = error.ResponseToString();
+		send(client_fd, payload.c_str(), payload.size(), 0);
 		CloseClient(client_fd);
 		return;
 	}
@@ -176,39 +176,40 @@ void ServerManager::HandleClientActivity(int client_fd)
 
 	const ServerConfig &config = _clientToServer[client_fd]->GetServerConfig();
 	HTTPResponse response;
-	bool keepAlive = parser.IsKeepAlive();
+	//bool keepAlive = parser.IsKeepAlive();
 	// response.SetHeader("Connection", keepAlive ? "keep-alive" : "close");
 	std::string httpResponse = response.GenerateResponse(parser, config);
+	std::cout << "Resposne: " << httpResponse << std::endl;
 	// Send the response back to the client
 	send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
 
-	parser.ResetRequest(); // Reset parser for next request
+
 	// CloseClient(client_fd);
-	if (keepAlive)
-	{
-		parser.ResetRequest();
-		_clientLastActivity[client_fd] = std::time(NULL);
-		std::cout << "Server Manager | Keep-Alive active for client fd: " << client_fd << std::endl;
-	}
-	else
-	{
+	// if (parser.IsKeepAlive())
+	// {
+	parser.ResetRequest();
+	// _clientLastActivity[client_fd] = std::time(NULL);
+	// std::cout << "Server Manager | Keep-Alive active for client fd: " << client_fd << std::endl;
+	// }
+	// else
+	// {
 		CloseClient(client_fd);
-	}
+	// }
 }
 
 // Closes a client connection and cleans up
 void ServerManager::CloseClient(int client_fd)
 {
 	epoll_ctl(_epollFD, EPOLL_CTL_DEL, client_fd, 0);
-	// close(client_fd);
+	close(client_fd);
 
 	// Remove from client-server mapping
 	if (_clientToServer.find(client_fd) != _clientToServer.end())
 		_clientToServer.erase(client_fd);
 	if (_clientParsers.find(client_fd) != _clientParsers.end())
 		_clientParsers.erase(client_fd);
-	if (_clientLastActivity.find(client_fd) != _clientLastActivity.end())
-		_clientLastActivity.erase(client_fd);
+	// if (_clientLastActivity.find(client_fd) != _clientLastActivity.end())
+		// _clientLastActivity.erase(client_fd);
 
 
 	std::cout << "Server Manager | Closed connection for client fd: " << client_fd << std::endl;
@@ -265,7 +266,7 @@ void ServerManager::RunLoop()
 			if (!isListening)
 				HandleClientActivity(fileDescriptor); // handle client activity
 		}
-		CheckTimeouts();
+		// CheckTimeouts();
 	}
 	ShutdownServers(); //interrupted, shutdown servers
 	std::cout << "Server Manager | Graceful shutdown complete.\n";
@@ -297,17 +298,17 @@ void ServerManager::ShutdownServers()
 	std::cout << "Server Manager | All servers shut down" << std::endl;
 }
 
-void ServerManager::CheckTimeouts()
-{
-    time_t now = std::time(NULL);
-    std::vector<int> toClose;
+// void ServerManager::CheckTimeouts()
+// {
+//     time_t now = std::time(NULL);
+//     std::vector<int> toClose;
 
-    for (std::map<int, time_t>::iterator it = _clientLastActivity.begin(); it != _clientLastActivity.end(); ++it)
-    {
-        if (now - it->second > 10) // 10 seconds timeout
-            toClose.push_back(it->first);
-    }
+//     for (std::map<int, time_t>::iterator it = _clientLastActivity.begin(); it != _clientLastActivity.end(); ++it)
+//     {
+//         if (now - it->second > 10) // 10 seconds timeout
+//             toClose.push_back(it->first);
+//     }
 
-    for (size_t i = 0; i < toClose.size(); ++i)
-        CloseClient(toClose[i]);
-}
+//     for (size_t i = 0; i < toClose.size(); ++i)
+//         CloseClient(toClose[i]);
+// }

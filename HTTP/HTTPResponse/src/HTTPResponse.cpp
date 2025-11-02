@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:35 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:11:22 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 20:37:41 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ std::string HTTPResponse::GenerateResponse(const HTTPRequest &request, const Ser
 {
 	const LocationConfig &location = FindMostMatchingLocation(config, request.GetPath());
 	std::string method = request.GetMethod();
-	if(!IsMethodAllowed(location, method))
+	if(!IsMethodAllowed(location, method, request.GetPath()))
 	{
 		SetStatus(405, request.GetHTTPVersion(), "Method Not Allowed");
 		SetHeader("Content-Type", "text/html");

@@ -1,0 +1,310 @@
+🧩 Starting Webserv with config: ConfigFiles/youipi.conf
+[+] Loaded 1 server(s).
+Server | Listening on 127.0.0.1:8089
+Server Manager | ServerManager initialized with 1 servers. Accepting connections...
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: GET
+SENDING 0
+[38:5:31mChecking location: / against request path: /[0m
+[38:5:31mChecking location: /directory/ against request path: /[0m
+[38:5:31mChecking location: /post_body against request path: /[0m
+[34mBest matching location: /[0m
+[38:5:31mChecking location: / against request path: /[0m
+[38:5:31mChecking location: /directory/ against request path: /[0m
+[38:5:31mChecking location: /post_body against request path: /[0m
+[34mBest matching location: /[0m
+Location root: ./www/YoupiBanane and path /
+[33mRequested path is a directory: ./www/YoupiBanane/[0m
+[38:5:31mChecking location: / against request path: /[0m
+[38:5:31mChecking location: /directory/ against request path: /[0m
+[38:5:31mChecking location: /post_body against request path: /[0m
+[34mBest matching location: /[0m
+[36mLocation root: ./www/YoupiBanane, index: , autoIndex: on[0m
+[32mAutoindex is enabled for path: ./www/YoupiBanane/[0m
+Resposne: HTTP/1.1 200 OK
+Content-Length: 259
+Content-Type: text/html
+
+<html><head><title>Index of /</title></head><body><li><a href="directory">directory</a></li><li><a href="index.html">index.html</a></li><li><a href="youpi.bad_extension">youpi.bad_extension</a></li><li><a href="youpi.bla">youpi.bla</a></li></ul></body></html>
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: POST
+ENTERED TRANSFER-ENCODING
+SENDING 0
+[38:5:31mChecking location: / against request path: /[0m
+[38:5:31mChecking location: /directory/ against request path: /[0m
+[38:5:31mChecking location: /post_body against request path: /[0m
+[34mBest matching location: /[0m
+Resposne: HTTP/1.1 405 Method Not Allowed
+Allow: GET
+Content-Length: 57
+Content-Type: text/html
+
+<html><body><h1>405 Method Not Allowed</h1></body></html>
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: HEAD
+SENDING 0
+[38:5:31mChecking location: / against request path: /[0m
+[38:5:31mChecking location: /directory/ against request path: /[0m
+[38:5:31mChecking location: /post_body against request path: /[0m
+[34mBest matching location: /[0m
+Resposne: HTTP/1.1 405 Method Not Allowed
+Allow: GET
+Content-Length: 57
+Content-Type: text/html
+
+<html><body><h1>405 Method Not Allowed</h1></body></html>
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: GET
+SENDING 0
+[38:5:31mChecking location: / against request path: /directory[0m
+[38:5:31mChecking location: /directory/ against request path: /directory[0m
+[38:5:31mChecking location: /post_body against request path: /directory[0m
+[34mBest matching location: /[0m
+[38:5:31mChecking location: / against request path: /directory[0m
+[38:5:31mChecking location: /directory/ against request path: /directory[0m
+[38:5:31mChecking location: /post_body against request path: /directory[0m
+[34mBest matching location: /[0m
+Location root: ./www/YoupiBanane and path /directory
+[33mRequested path is a directory: ./www/YoupiBanane/directory[0m
+[38:5:31mChecking location: / against request path: /directory[0m
+[38:5:31mChecking location: /directory/ against request path: /directory[0m
+[38:5:31mChecking location: /post_body against request path: /directory[0m
+[34mBest matching location: /[0m
+[36mLocation root: ./www/YoupiBanane, index: , autoIndex: on[0m
+[32mAutoindex is enabled for path: ./www/YoupiBanane/directory[0m
+Resposne: HTTP/1.1 200 OK
+Content-Length: 322
+Content-Type: text/html
+
+<html><head><title>Index of /directory</title></head><body><li><a href="Yeah">Yeah</a></li><li><a href="index.html">index.html</a></li><li><a href="input">input</a></li><li><a href="nop">nop</a></li><li><a href="youpi.bad_extension">youpi.bad_extension</a></li><li><a href="youpi.bla">youpi.bla</a></li></ul></body></html>
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: GET
+SENDING 0
+[38:5:31mChecking location: / against request path: /directory/youpi.bad_extension[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/youpi.bad_extension[0m
+[38:5:31mChecking location: /post_body against request path: /directory/youpi.bad_extension[0m
+[34mBest matching location: /directory/[0m
+[38:5:31mChecking location: / against request path: /directory/youpi.bad_extension[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/youpi.bad_extension[0m
+[38:5:31mChecking location: /post_body against request path: /directory/youpi.bad_extension[0m
+[34mBest matching location: /directory/[0m
+Location root: ./www/YoupiBanane and path /directory/youpi.bad_extension
+Resposne: HTTP/1.1 200 OK
+Content-Length: 32
+Content-Type: application/octet-stream
+
+Content of youpi.bad_extensions
+
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: GET
+SENDING 0
+[38:5:31mChecking location: / against request path: /directory/youpi.bla[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/youpi.bla[0m
+[38:5:31mChecking location: /post_body against request path: /directory/youpi.bla[0m
+[34mBest matching location: /directory/[0m
+[38:5:31mChecking location: / against request path: /directory/youpi.bla[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/youpi.bla[0m
+[38:5:31mChecking location: /post_body against request path: /directory/youpi.bla[0m
+[34mBest matching location: /directory/[0m
+Location root: ./www/YoupiBanane and path /directory/youpi.bla
+./www/YoupiBanane/directory/youpi.bla<-  norm script path
+./www/YoupiBanane/directory/youpi.bla<- script path
+cgi output: script path ./www/YoupiBanane/directory/youpi.bla
+
+CGI executed successfully.
+Resposne: HTTP/1.1 200 OK
+Content-Length: 50
+
+script path ./www/YoupiBanane/directory/youpi.bla
+
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: GET
+SENDING 0
+[38:5:31mChecking location: / against request path: /directory/oulalala[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/oulalala[0m
+[38:5:31mChecking location: /post_body against request path: /directory/oulalala[0m
+[34mBest matching location: /directory/[0m
+[38:5:31mChecking location: / against request path: /directory/oulalala[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/oulalala[0m
+[38:5:31mChecking location: /post_body against request path: /directory/oulalala[0m
+[34mBest matching location: /directory/[0m
+Location root: ./www/YoupiBanane and path /directory/oulalala
+Resposne: HTTP/1.1 404 Not Found
+Content-Length: 89
+Content-Type: text/html
+
+<html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1></body></html>
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: GET
+SENDING 0
+[38:5:31mChecking location: / against request path: /directory/nop[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/nop[0m
+[38:5:31mChecking location: /post_body against request path: /directory/nop[0m
+[34mBest matching location: /directory/[0m
+[38:5:31mChecking location: / against request path: /directory/nop[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/nop[0m
+[38:5:31mChecking location: /post_body against request path: /directory/nop[0m
+[34mBest matching location: /directory/[0m
+Location root: ./www/YoupiBanane and path /directory/nop
+[33mRequested path is a directory: ./www/YoupiBanane/directory/nop[0m
+[38:5:31mChecking location: / against request path: /directory/nop[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/nop[0m
+[38:5:31mChecking location: /post_body against request path: /directory/nop[0m
+[34mBest matching location: /directory/[0m
+[36mLocation root: ./www/YoupiBanane, index: youpi.bad_extension, autoIndex: off[0m
+[32mServing index file: ./www/YoupiBanane/directory/nop/youpi.bad_extension[0m
+Resposne: HTTP/1.1 200 OK
+Content-Length: 31
+Content-Type: application/octet-stream
+
+Content of youpi.bad_extension
+
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: GET
+SENDING 0
+[38:5:31mChecking location: / against request path: /directory/nop/[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/nop/[0m
+[38:5:31mChecking location: /post_body against request path: /directory/nop/[0m
+[34mBest matching location: /directory/[0m
+[38:5:31mChecking location: / against request path: /directory/nop/[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/nop/[0m
+[38:5:31mChecking location: /post_body against request path: /directory/nop/[0m
+[34mBest matching location: /directory/[0m
+Location root: ./www/YoupiBanane and path /directory/nop/
+[33mRequested path is a directory: ./www/YoupiBanane/directory/nop/[0m
+[38:5:31mChecking location: / against request path: /directory/nop/[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/nop/[0m
+[38:5:31mChecking location: /post_body against request path: /directory/nop/[0m
+[34mBest matching location: /directory/[0m
+[36mLocation root: ./www/YoupiBanane, index: youpi.bad_extension, autoIndex: off[0m
+[32mServing index file: ./www/YoupiBanane/directory/nop//youpi.bad_extension[0m
+Resposne: HTTP/1.1 200 OK
+Content-Length: 31
+Content-Type: application/octet-stream
+
+Content of youpi.bad_extension
+
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: GET
+SENDING 0
+[38:5:31mChecking location: / against request path: /directory/nop/other.pouic[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/nop/other.pouic[0m
+[38:5:31mChecking location: /post_body against request path: /directory/nop/other.pouic[0m
+[34mBest matching location: /directory/[0m
+[38:5:31mChecking location: / against request path: /directory/nop/other.pouic[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/nop/other.pouic[0m
+[38:5:31mChecking location: /post_body against request path: /directory/nop/other.pouic[0m
+[34mBest matching location: /directory/[0m
+Location root: ./www/YoupiBanane and path /directory/nop/other.pouic
+Resposne: HTTP/1.1 200 OK
+Content-Length: 23
+Content-Type: application/octet-stream
+
+Content of other.pouic
+
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: GET
+SENDING 0
+[38:5:31mChecking location: / against request path: /directory/nop/other.pouac[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/nop/other.pouac[0m
+[38:5:31mChecking location: /post_body against request path: /directory/nop/other.pouac[0m
+[34mBest matching location: /directory/[0m
+[38:5:31mChecking location: / against request path: /directory/nop/other.pouac[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/nop/other.pouac[0m
+[38:5:31mChecking location: /post_body against request path: /directory/nop/other.pouac[0m
+[34mBest matching location: /directory/[0m
+Location root: ./www/YoupiBanane and path /directory/nop/other.pouac
+Resposne: HTTP/1.1 404 Not Found
+Content-Length: 89
+Content-Type: text/html
+
+<html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1></body></html>
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: GET
+SENDING 0
+[38:5:31mChecking location: / against request path: /directory/Yeah[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/Yeah[0m
+[38:5:31mChecking location: /post_body against request path: /directory/Yeah[0m
+[34mBest matching location: /directory/[0m
+[38:5:31mChecking location: / against request path: /directory/Yeah[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/Yeah[0m
+[38:5:31mChecking location: /post_body against request path: /directory/Yeah[0m
+[34mBest matching location: /directory/[0m
+Location root: ./www/YoupiBanane and path /directory/Yeah
+[33mRequested path is a directory: ./www/YoupiBanane/directory/Yeah[0m
+[38:5:31mChecking location: / against request path: /directory/Yeah[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/Yeah[0m
+[38:5:31mChecking location: /post_body against request path: /directory/Yeah[0m
+[34mBest matching location: /directory/[0m
+[36mLocation root: ./www/YoupiBanane, index: youpi.bad_extension, autoIndex: off[0m
+Resposne: HTTP/1.1 404 Not Found
+Content-Length: 89
+Content-Type: text/html
+
+<html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1></body></html>
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: GET
+SENDING 0
+[38:5:31mChecking location: / against request path: /directory/Yeah/not_happy.bad_extension[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/Yeah/not_happy.bad_extension[0m
+[38:5:31mChecking location: /post_body against request path: /directory/Yeah/not_happy.bad_extension[0m
+[34mBest matching location: /directory/[0m
+[38:5:31mChecking location: / against request path: /directory/Yeah/not_happy.bad_extension[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/Yeah/not_happy.bad_extension[0m
+[38:5:31mChecking location: /post_body against request path: /directory/Yeah/not_happy.bad_extension[0m
+[34mBest matching location: /directory/[0m
+Location root: ./www/YoupiBanane and path /directory/Yeah/not_happy.bad_extension
+Resposne: HTTP/1.1 200 OK
+Content-Length: 0
+Content-Type: application/octet-stream
+
+
+Server Manager | Closed connection for client fd: 5
+Server | New client connected with fd: 5
+Server Manager | Accepted new client with fd: 5
+Validating HTTP Method: POST
+ENTERED TRANSFER-ENCODING
+SENDING 0
+[38:5:31mChecking location: / against request path: /directory/youpi.bla[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/youpi.bla[0m
+[38:5:31mChecking location: /post_body against request path: /directory/youpi.bla[0m
+[34mBest matching location: /directory/[0m
+[38:5:31mChecking location: / against request path: /directory/youpi.bla[0m
+[38:5:31mChecking location: /directory/ against request path: /directory/youpi.bla[0m
+[38:5:31mChecking location: /post_body against request path: /directory/youpi.bla[0m
+[34mBest matching location: /directory/[0m
+./www/YoupiBanane/directory/youpi.bla<-  norm script path
+./www/YoupiBanane/directory/youpi.bla<- script path
+cgi output: script path ./www/YoupiBanane/directory/youpi.bla
+
+Resposne: HTTP/1.1 200 OK
+Content-Length: 50
+
+script path ./www/YoupiBanane/directory/youpi.bla
+
+Server Manager | Closed connection for client fd: 5

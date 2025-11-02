@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 12:58:50 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 20:01:08 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/02 22:06:47 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 #define CRLF "\r\n"
 #define DOUBLECRLF "\r\n\r\n"
 
-#define MAX_BYTES 8192
+#define MAX_BYTES 1000000000
 #define MAX_SECTION_BYTES 16384
 #define MAX_HEADER_COUNT 200
 #define DEFAULT_MAX_BODY_SIZE 1000000 // 1MB
