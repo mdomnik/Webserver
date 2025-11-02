@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseMethods.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 15:51:18 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 13:43:22 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HTTPResponse.hpp"
 #include "../../CGI/inc/CGIHandler.hpp"
+#include "../inc/ConfigAnsi.hpp"
 
 std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &config)
 {
@@ -20,6 +21,8 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 	const LocationConfig &location = FindMostMatchingLocation(config, path);
 	std::string root = location.root.empty() ? "./www" : location.root;
 	std::string fullPath = root + path;
+
+	std::cerr << MAGENTA << "Handling GET for path: " << fullPath << ESCAPE << std::endl;
 
 	if (!location.cgiExtension.empty() && fullPath.size() >= location.cgiExtension.size() && fullPath.substr(fullPath.size() - location.cgiExtension.size()) == location.cgiExtension)
 	{
@@ -54,6 +57,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 	
 	if (IsDirectory(fullPath))
 	{
+		std::cout << YELLOW << "Requested path is a directory: " << fullPath << ESCAPE << std::endl;
 		const LocationConfig &location = FindMostMatchingLocation(config, path);
 		if (location.autoIndex)
 		{
@@ -61,8 +65,11 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 			SetHeader("Content-Type", "text/html");
 			SetBody(buildAutoIndexPage(fullPath, path));
 			return (ResponseToString());
+		} else {
+			fullPath += "/" + location.index;
+			SetResponseToError(403, version, "Forbidden");
+			return (ResponseToString());
 		}
-		fullPath += "/" + location.index;
 	}
 
 	if (!IsFile(fullPath))

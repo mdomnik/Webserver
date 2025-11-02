@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:14:38 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:45:30 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 13:07:03 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ struct LocationConfig
 	std::string path; //refers to the configuration path
     std::map<int, std::string> redirection; // HTTP redirect rule (return 301 http://example.com/)
     std::string root; //directory where the requested files are located for that route
+	std::string alias; // alternative directory mapping for the location
 
     bool autoIndex; //enable or disable automatic directory listing
     std::string index; //default file, front page directory

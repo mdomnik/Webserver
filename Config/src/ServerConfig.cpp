@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:31:18 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 14:22:19 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 13:19:54 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ LocationConfig::LocationConfig() : autoIndex(false), uploadEnable(false)
 {
     path = "/";
     root = "";
-    index = "index.html";
+    index = "";
     uploadStore = "/tmp";
 }
 

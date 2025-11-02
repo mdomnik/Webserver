@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 20:09:05 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/02 13:27:27 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,6 +201,11 @@ LocationConfig ConfigParser::ParseLocation()
 		ParseLocationParts(loc, token);
 	}
 	Expect("}");
+	if (loc.autoIndex) {
+		loc.index = "index.html";
+	} else if (loc.index.empty()) {
+		loc.index = "";
+	}
 	return (loc);
 }
 
@@ -224,6 +229,10 @@ void ConfigParser::ParseLocationParts(LocationConfig& location, const std::strin
 	else if (token == "root")
 	{
 		location.root = Next();
+		Expect(";");
+	}
+	else if (token == "alias") {
+		location.alias = Next();
 		Expect(";");
 	}
 	else if (token == "autoindex")
