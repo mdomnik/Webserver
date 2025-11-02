@@ -1,0 +1,12 @@
+body {
+	background-color: hsl(199, 22%, 41%);
+}
+
+li {
+	color:black;
+}
+
+a {
+	text-decoration: none;
+	color:black;
+}
