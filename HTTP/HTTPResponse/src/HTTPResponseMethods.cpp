@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 13:43:22 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/02 14:09:52 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,8 +59,11 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 	{
 		std::cout << YELLOW << "Requested path is a directory: " << fullPath << ESCAPE << std::endl;
 		const LocationConfig &location = FindMostMatchingLocation(config, path);
+
+		std::cout << CYAN << "Location root: " << location.root << ", index: " << location.index << ", autoIndex: " << (location.autoIndex ? "on" : "off") << ESCAPE << std::endl;
 		if (location.autoIndex)
 		{
+			std::cout << GREEN << "Autoindex is enabled for path: " << fullPath << ESCAPE << std::endl;
 			SetStatus(200, version, "OK");
 			SetHeader("Content-Type", "text/html");
 			SetBody(buildAutoIndexPage(fullPath, path));

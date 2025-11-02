@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseUtils.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:17:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:49:51 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/02 14:12:23 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,17 +192,20 @@ std::string HTTPResponse::ResponseFromCGI(const std::string &out, const std::str
 
 const LocationConfig& HTTPResponse::FindMostMatchingLocation(const ServerConfig &serverConfig, const std::string &requestPath)
 {
+	if (serverConfig.locations.empty()) {
+		throw std::runtime_error("No location configurations available");
+	}
+
 	const LocationConfig* bestMatch = &serverConfig.locations[0];
+	size_t bestLength = 0;
 
-	size_t Length = 0;
-
-	for (size_t i = 0; i < serverConfig.locations.size(); ++i)
+	for (std::vector<LocationConfig>::const_iterator it = serverConfig.locations.begin();
+		it != serverConfig.locations.end(); ++it)
 	{
-		const LocationConfig& loc = serverConfig.locations[i];
-		if (requestPath.find(loc.path) == 0 && loc.path.size() > Length)
+		if (requestPath.find(it->path) == 0 && it->path.size() > bestLength)
 		{
-			bestMatch = &loc;
-			Length = loc.path.size();
+			bestMatch = &(*it);
+			bestLength = it->path.size();
 		}
 	}
 	return (*bestMatch);
