@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:35 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 13:52:26 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/02 14:42:01 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ std::string HTTPResponse::GenerateResponse(const HTTPRequest &request, const Ser
 		return (HandleDELETE(request, config));
 	}
 	else
-	return (SetResponseToError(405, request.GetHTTPVersion(), "Method Not Allowed"), ResponseToString());
+		return (SetResponseToError(405, request.GetHTTPVersion(), "Method Not Allowed"), ResponseToString());
 }
 
 std::string HTTPResponse::LoadErrorPage(int statusCode, const ServerConfig &config)

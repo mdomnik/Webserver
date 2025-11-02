@@ -6,13 +6,15 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 14:24:51 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/02 14:40:54 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HTTPResponse.hpp"
 #include "../../CGI/inc/CGIHandler.hpp"
 #include "../inc/ConfigAnsi.hpp"
+#include <string>
+#include <algorithm>
 
 std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &config)
 {
@@ -21,6 +23,11 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 	const LocationConfig &location = FindMostMatchingLocation(config, path);
 	std::string root = location.root.empty() ? "./www" : location.root;
 	std::string fullPath = root + path;
+
+	if (std::find(location.methods.begin(), location.methods.end(), "GET") == location.methods.end())
+	{
+		return (SetResponseToError(405, version, "Method Not Allowed"), ResponseToString());
+	}
 
 	std::cerr << MAGENTA << "Handling GET for path: " << fullPath << ESCAPE << std::endl;
 
@@ -125,6 +132,11 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 	std::string root = location.root.empty() ? "./www" : location.root;
 	std::string fullPath = root + req.GetPath();
 	
+	if (std::find(location.methods.begin(), location.methods.end(), "POST") == location.methods.end())
+	{
+		return (SetResponseToError(405, version, "Method Not Allowed"), ResponseToString());
+	}
+
 	if (!location.cgiExtension.empty() && fullPath.size() >= location.cgiExtension.size() && fullPath.substr(fullPath.size() - location.cgiExtension.size()) == location.cgiExtension)
 	{
 		try
@@ -207,6 +219,11 @@ std::string HTTPResponse::HandleDELETE(const HTTPRequest &req, const ServerConfi
 	const LocationConfig &location = FindMostMatchingLocation(config, req.GetPath());
 	std::string root = location.root.empty() ? "./www" : location.root;
 	std::string fullPath = root + req.GetPath();
+
+	if (std::find(location.methods.begin(), location.methods.end(), "DELETE") == location.methods.end())
+	{
+		return (SetResponseToError(405, version, "Method Not Allowed"), ResponseToString());
+	}
 
 	if (remove(fullPath.c_str()) != 0)
 	{

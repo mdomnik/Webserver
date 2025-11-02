@@ -6,12 +6,12 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:17:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 14:12:23 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/02 14:38:11 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HTTPResponse.hpp"
-
+#include "../inc/ConfigAnsi.hpp"
 // Checks if a string ends with a specific substring
 bool HTTPResponse::IsEndOfString(const std::string &str, const std::string &endpart)
 {
@@ -202,11 +202,13 @@ const LocationConfig& HTTPResponse::FindMostMatchingLocation(const ServerConfig 
 	for (std::vector<LocationConfig>::const_iterator it = serverConfig.locations.begin();
 		it != serverConfig.locations.end(); ++it)
 	{
+		std::cout << RED << "Checking location: " << it->path << " against request path: " << requestPath << ESCAPE << std::endl;
 		if (requestPath.find(it->path) == 0 && it->path.size() > bestLength)
 		{
 			bestMatch = &(*it);
 			bestLength = it->path.size();
 		}
 	}
+	std::cout << BLUE << "Best matching location: " << bestMatch->path << ESCAPE << std::endl;
 	return (*bestMatch);
 }

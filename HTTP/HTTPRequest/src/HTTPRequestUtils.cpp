@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequestUtils.cpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 12:27:48 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 13:13:52 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/02 14:44:09 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,8 @@ int HttpStringToSizet(const std::string &str, size_t &value)
 // check if HTTP's method matches the predetermined set
 int HTTPValidateMethod(const std::string &method)
 {
-	if (method == "GET" || method == "POST" || method == "DELETE")
+	std::cout << "Validating HTTP Method: " << method << std::endl;
+	if (method == "GET" || method == "POST" || method == "DELETE" || method == "PUT" || method == "HEAD" || method == "OPTIONS" || method == "PATCH")
 		return (1);
 	return (0);
 }
