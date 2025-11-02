@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 14:20:06 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/02 19:06:52 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -370,7 +370,15 @@ std::vector<ServerConfig> ConfigParser::parse()
 		else
 			throw std::runtime_error("expected the token: server got: " + token);
 	}
+	std::vector<std::pair<std::string, int> > checkports;
 	for (size_t i = 0; i < servers.size(); ++i)
+	{
+		for (size_t j = 0; j < servers[i].listens.size(); j++)
+			checkports.push_back(servers[i].listens[j]);
 		ValidateConfig(servers[i]);
+	}
+	std::sort(checkports.begin(), checkports.end());
+	if (std::adjacent_find(checkports.begin(), checkports.end()) != checkports.end())
+		throw std::runtime_error("Duplicate Ports on Same IP");
 	return (servers);
 }

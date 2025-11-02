@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigParser.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:26:14 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/29 19:48:53 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/02 18:47:26 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@
 #include <unistd.h>
 #include <cstdlib>
 #include <sys/stat.h>
+#include <algorithm>
+#include <list>
 
 #define MAX_CLIENT_BODY_SIZE 10485760
 
