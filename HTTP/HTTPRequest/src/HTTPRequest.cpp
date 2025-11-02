@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 15:55:07 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/02 19:11:04 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,7 @@ ParseStatus HTTPRequest::ParseRequestChunk(const std::string &chunk)
 	{
 		if (_state == RequestLineState) //checks which state we are in
 		{
+			std::cout << "buffer: " << _buffer << std::endl;
 			ParseStatus status = ParseRequestLine(); //parses the current stage
 			if (status != Success)
 				return (status);
@@ -144,6 +145,14 @@ ParseStatus HTTPRequest::ParseRequestChunk(const std::string &chunk)
 		if (_state == BodyState)
 		{
 			ParseStatus status = ParseBody();
+			if (status != Success)
+				return (status);
+			_state = DoneState;
+			return (Success);
+		}
+		if (_state == ChunkedBodyState)
+		{
+			ParseStatus status = ParseChunkedBody();
 			if (status != Success)
 				return (status);
 			_state = DoneState;
@@ -188,6 +197,11 @@ ParseStatus HTTPRequest::ParseRequestLine()
 	std::vector<std::string> components = HTTPSplitTokens(str);
 	if (components.size() != 3) //if not exactly 3 parts
 	{
+		std::cout << "Count of requrst " << components.size() << std::endl;
+		for (size_t i = 0; i < components.size(); ++i)
+		{
+			std::cout << "string: " << components[i] << std::endl; 
+		}
 		_errorMessage = "Malformed Request Line";
 		_state = ErrorState;
 		return (BadRequest);
@@ -309,6 +323,19 @@ ParseStatus HTTPRequest::ParseHeaders()
 		}
 	}
 
+	std::map<std::string, std::string>::const_iterator enc = _headers.find("transfer-encoding");
+	if (enc != _headers.end())
+	{
+		std::string val = enc->second;
+		for (size_t i = 0; i < val.size(); ++i)
+			val[i] = std::tolower(static_cast<unsigned char>(val[i]));
+		if (val == "chunked")
+		{
+			_state = ChunkedBodyState;
+			return (Success);
+		}
+	}
+
 	// check if there is content length header and validate it
 	size_t ContentLength = 0;
 	ParseStatus lengthStatus = ValidateContentLength(ContentLength);
@@ -349,6 +376,56 @@ ParseStatus HTTPRequest::ParseBody()
 	_body.assign(_buffer, 0, contentLength); //extract body
 	_buffer.erase(0, contentLength); //remove body from buffer
 
+	return (Success);
+}
+
+// Parses the Chunked Body
+ParseStatus HTTPRequest::ParseChunkedBody()
+{
+	while (true)
+	{
+		// Find CRLF marking end of current chunk size
+		size_t crlfPos = _buffer.find(CRLF);
+		if (crlfPos == std::string::npos)
+			return Incomplete;
+
+		// Extract chunk size in hex
+		std::string sizeLine = _buffer.substr(0, crlfPos);
+		size_t chunkSize = 0;
+		std::stringstream ss;
+		ss << std::hex << sizeLine;
+		ss >> chunkSize;
+
+		// Remove the size line + CRLF
+		_buffer.erase(0, crlfPos + 2);
+
+		if (chunkSize == 0)
+		{
+			// Final chunk (ends with \r\n)
+			size_t ending = _buffer.find(CRLF);
+			if (ending != std::string::npos)
+				_buffer.erase(0, ending + 2);
+			_state = DoneState;
+			return Success;
+		}
+
+		// Wait until we have full chunk data + trailing CRLF
+		if (_buffer.size() < chunkSize + 2)
+			return Incomplete;
+
+		// Append chunk data to body
+		_body.append(_buffer, 0, chunkSize);
+
+		if (_body.size() > _maxBodySize) // Check max body size
+		{
+			_errorMessage = "Body size exceeds maximum allowed";
+			_state = ErrorState;
+			return (BadRequest);
+		}
+
+		// Remove chunk data + CRLF
+		_buffer.erase(0, chunkSize + 2);
+	}
 	return (Success);
 }
 

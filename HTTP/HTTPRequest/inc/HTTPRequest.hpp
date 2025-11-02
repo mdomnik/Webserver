@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 12:58:50 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 14:44:35 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/02 19:10:51 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cctype>
+#include  <iostream>
 
 #define CRLF "\r\n"
 #define DOUBLECRLF "\r\n\r\n"
@@ -44,6 +45,7 @@ enum ParseState
 	RequestLineState,
 	HeadersState,
 	BodyState,
+	ChunkedBodyState,
 	DoneState,
 	ErrorState
 };
@@ -90,6 +92,7 @@ class HTTPRequest
 		ParseStatus ParseRequestLine();
 		ParseStatus ParseHeaders();
 		ParseStatus ParseBody();
+		ParseStatus ParseChunkedBody();
 
 		// content length validation
 		ParseStatus ValidateContentLength(size_t &contentLength) const;

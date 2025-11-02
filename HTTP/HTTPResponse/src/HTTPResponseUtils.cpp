@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseUtils.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:17:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 14:38:11 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/02 19:13:33 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,4 +211,18 @@ const LocationConfig& HTTPResponse::FindMostMatchingLocation(const ServerConfig 
 	}
 	std::cout << BLUE << "Best matching location: " << bestMatch->path << ESCAPE << std::endl;
 	return (*bestMatch);
+}
+
+bool HTTPResponse::IsMethodAllowed(const LocationConfig &location, const std::string &method)
+{
+	if (method != "GET" && method != "POST" && method != "DELETE")
+		return (false);
+    if (location.methods.empty())
+        return (true);
+    for (size_t i = 0; i < location.methods.size(); ++i)
+    {
+        if (location.methods[i] == method)
+            return (true);
+    }
+    return (false);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseMethods.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 14:40:54 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/02 19:15:08 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 	std::string path = req.GetPath();
 	const LocationConfig &location = FindMostMatchingLocation(config, path);
 	std::string root = location.root.empty() ? "./www" : location.root;
+	std::cout << "Location root: " << root << " and path " << path << std::endl;
 	std::string fullPath = root + path;
 
 	if (std::find(location.methods.begin(), location.methods.end(), "GET") == location.methods.end())
@@ -37,12 +38,13 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 		{
 			CGIHandler cgi(fullPath, req, location);
 			std::string cgiOutput = cgi.Execute();
-
+			// std::cout << cgiOutput << std::endl;
 			if (cgiOutput.empty())
 			{
 				std::string customPage = LoadErrorPage(404, config);
 				if (!customPage.empty())
 				{
+					std::cout << "CGI output empty, serving custom 404 page." << std::endl;
 					SetStatus(404, version, "Not Found");
 					SetHeader("Content-Type", "text/html");
 					SetBody(customPage);
@@ -51,6 +53,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 				SetResponseToError(404, version, "Not Found");
 				return (ResponseToString());
 			}
+			std::cout << "CGI executed successfully." << std::endl;
 			return ResponseFromCGI(cgiOutput, version);
 		}
 		catch(const std::exception& e)
@@ -188,8 +191,8 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 		return (ResponseToString());
 	}
 	
-	std::string destanation = location.uploadStore + "/upload.txt";
-	std::ofstream outFile(destanation.c_str(), std::ios::out | std::ios::binary);
+	std::string destination = location.uploadStore + "/upload.txt";
+	std::ofstream outFile(destination.c_str(), std::ios::out | std::ios::binary);
 	if (!outFile.is_open())
 	{
 		std::string customPage = LoadErrorPage(500, config);
@@ -208,7 +211,7 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 
 	SetStatus(201, version, "Created");
 	SetHeader("Content-Type", "text/html");
-	SetBody("File uploaded successfully to " + destanation);
+	SetBody("File uploaded successfully to " + destination);
 
 	return (ResponseToString());
 }

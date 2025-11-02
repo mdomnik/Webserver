@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:35 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 14:42:01 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/02 19:11:22 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,30 @@ std::string HTTPResponse::ResponseToString() const
 // Generates the HTTP response based on the request and server configuration
 std::string HTTPResponse::GenerateResponse(const HTTPRequest &request, const ServerConfig &config)
 {
+	const LocationConfig &location = FindMostMatchingLocation(config, request.GetPath());
 	std::string method = request.GetMethod();
+	if(!IsMethodAllowed(location, method))
+	{
+		SetStatus(405, request.GetHTTPVersion(), "Method Not Allowed");
+		SetHeader("Content-Type", "text/html");
+		// Build Allow header
+		std::string allow;
+		for (size_t i = 0; i < location.methods.size(); ++i)
+		{
+		    if (i > 0) allow += ", ";
+		    allow += location.methods[i];
+		}
+		if (allow.empty())
+		    allow = "GET, POST, DELETE";
+		SetHeader("Allow", allow);
+		// Optional: serve custom 405 error page if present
+		std::string custom = LoadErrorPage(405, config);
+		if (!custom.empty())
+		    SetBody(custom);
+		else
+		    SetBody("<html><body><h1>405 Method Not Allowed</h1></body></html>");
+		return ResponseToString();
+	}
 	if (method == "GET")
 	{
 		return (HandleGET(request, config));

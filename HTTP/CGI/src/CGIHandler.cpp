@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIHandler.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 20:13:05 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/10/30 22:29:04 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/01 22:46:32 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ std::string CGIHandler::Execute()
 		std::vector<std::string> environmentValues;
 		for (std::map<std::string, std::string>::iterator it = _envVariables.begin(); it != _envVariables.end(); ++it)
 			environmentValues.push_back(BuildEnvString(it->first, it->second));
-		
+		std::cout << "script path: " << _scriptPath << std::endl; // this fix testes with cgi . COME BACK TO IT LATER
 		std::vector<char*> envp; // Prepare environment variables
 		for (size_t i = 0; i < environmentValues.size(); ++i)
 			envp.push_back(const_cast<char*>(environmentValues[i].c_str()));
