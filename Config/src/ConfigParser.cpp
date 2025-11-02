@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 13:27:27 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/02 14:20:06 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,6 +193,7 @@ LocationConfig ConfigParser::ParseLocation()
 	LocationConfig loc;
 
 	loc.path = Next();
+	loc.index = "";
 	Expect("{");
 
 	while (Peek() != "}")
@@ -201,11 +202,6 @@ LocationConfig ConfigParser::ParseLocation()
 		ParseLocationParts(loc, token);
 	}
 	Expect("}");
-	if (loc.autoIndex) {
-		loc.index = "index.html";
-	} else if (loc.index.empty()) {
-		loc.index = "";
-	}
 	return (loc);
 }
 

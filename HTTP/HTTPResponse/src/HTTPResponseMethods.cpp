@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 14:09:52 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/02 14:24:51 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,12 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 		const LocationConfig &location = FindMostMatchingLocation(config, path);
 
 		std::cout << CYAN << "Location root: " << location.root << ", index: " << location.index << ", autoIndex: " << (location.autoIndex ? "on" : "off") << ESCAPE << std::endl;
-		if (location.autoIndex)
+		if (!location.index.empty() && IsFile(fullPath + "/" + location.index))
+		{
+			fullPath += "/" + location.index;
+			std::cout << GREEN << "Serving index file: " << fullPath << ESCAPE << std::endl;
+		}
+		else if (location.autoIndex)
 		{
 			std::cout << GREEN << "Autoindex is enabled for path: " << fullPath << ESCAPE << std::endl;
 			SetStatus(200, version, "OK");
@@ -69,8 +74,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 			SetBody(buildAutoIndexPage(fullPath, path));
 			return (ResponseToString());
 		} else {
-			fullPath += "/" + location.index;
-			SetResponseToError(403, version, "Forbidden");
+			SetResponseToError(404, version, "Not Found");
 			return (ResponseToString());
 		}
 	}
