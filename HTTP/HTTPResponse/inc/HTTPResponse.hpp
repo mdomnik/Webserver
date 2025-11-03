@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:20 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/01 16:27:00 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/03 06:57:32 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@
 #include "../../Config/inc/ServerConfig.hpp"
 #include "../../HTTP/HTTPRequest/inc/HTTPRequest.hpp"
 #include "../../../Server/inc/Server.hpp"
+#include "../../Config/inc/ConfigAnsi.hpp"
 
 class HTTPResponse
 {

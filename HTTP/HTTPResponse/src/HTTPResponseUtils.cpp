@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseUtils.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:17:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:33:48 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/03 07:35:02 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HTTPResponse.hpp"
 #include "../inc/ConfigAnsi.hpp"
+
 // Checks if a string ends with a specific substring
 bool HTTPResponse::IsEndOfString(const std::string &str, const std::string &endpart)
 {
@@ -71,7 +72,8 @@ std::string HTTPResponse::GetFileType(const std::string &path)
 
 std::string HTTPResponse::buildAutoIndexPage(const std::string &Path, const std::string &uri)
 {
-		std::ostringstream html;
+	std::cout << BLUE << "Building autoindex page for path: " << Path << " and uri: " << uri << ESCAPE << std::endl;
+	std::ostringstream html;
 	html << "<html><head><title>Index of " << uri << "</title></head><body>"; //html header
 	
 	DIR *dir = opendir(Path.c_str()); //open directory
@@ -84,7 +86,9 @@ std::string HTTPResponse::buildAutoIndexPage(const std::string &Path, const std:
 		std::string name = entry->d_name; //get entry name
 		if (name == "." || name == "..") //skip current and parent directory
 			continue;
-		html << "<li><a href=\"" << name << "\">" << name << "</a></li>"; //add link to html
+		// Modified to work with subdirectories
+		std::string fullPath = uri + ((!uri.empty() && uri[uri.size() - 1] == '/') ? "" : "/") + name;
+		html << "<li><a href=\"" << fullPath << "\">" << name << "</a></li>"; //add link to html
 	}
 	closedir(dir);
 

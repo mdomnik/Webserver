@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 20:01:32 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/03 07:50:16 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HTTPRequest.hpp"
 #include "../inc/HTTPRequestUtils.hpp"
+#include "../../Config/inc/ConfigAnsi.hpp"
 
 // ==== Constructor ====
 HTTPRequest::HTTPRequest() : _method(), _path(), _httpVersion(), _headers(), _body(), _state(RequestLineState), _buffer(), _errorMessage(), _maxBodySize(DEFAULT_MAX_BODY_SIZE) {}
@@ -61,6 +62,16 @@ const std::string& HTTPRequest::GetHTTPVersion() const { return (_httpVersion); 
 const std::map<std::string, std::string>& HTTPRequest::GetHeaders() const { return (_headers); }
 
 const std::string& HTTPRequest::GetBody() const { return (_body); }
+
+std::string HTTPRequest::GetHeadersString() const
+{
+	std::string headersStr;
+	for (std::map<std::string, std::string>::const_iterator it = _headers.begin(); it != _headers.end(); ++it)
+	{
+		headersStr += it->first + ": " + it->second + CRLF;
+	}
+	return headersStr;
+}
 
 std::string HTTPRequest::GetHeader(const std::string& key) const
 {
@@ -130,10 +141,10 @@ ParseStatus HTTPRequest::ParseRequestChunk(const std::string &chunk)
 	// Main parsing loop
 	while (true)
 	{
-		std::cout << _maxBodySize << "MAXBODY" << std::endl;
+		// std::cout << _maxBodySize << "MAXBODY" << std::endl;
 		if (_state == RequestLineState) //checks which state we are in
 		{
-			std::cout << "buffer: " << _buffer << std::endl;
+			std::cout << MAGENTA << "Incoming request: " << _buffer << ESCAPE << std::endl;
 			ParseStatus status = ParseRequestLine(); //parses the current stage
 			if (status != Success)
 				return (status);
@@ -163,6 +174,7 @@ ParseStatus HTTPRequest::ParseRequestChunk(const std::string &chunk)
 		}
 		if (_state == DoneState)
 		{
+			std::cout << BLUE << "Parsing complete" << ESCAPE << std::endl;
 			return (Success);
 		}
 		if (_state == ErrorState)
@@ -420,7 +432,7 @@ ParseStatus HTTPRequest::ParseChunkedBody()
 		// Append chunk data to body
 		_body.append(_buffer, 0, chunkSize);
 
-		std::cout << _maxBodySize << "MAXBODY" << std::endl;
+		// std::cout << _maxBodySize << " MAXBODY" << std::endl;
 		if (_body.size() > _maxBodySize) // Check max body size
 		{
 			_errorMessage = "Body size exceeds maximum allowed";

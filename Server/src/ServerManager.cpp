@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 20:01:42 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/03 07:07:27 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/ServerManager.hpp"
+#include "../../Config/inc/ConfigAnsi.hpp"
 // Global flag updated by the signal handler
 volatile sig_atomic_t g_stopSignal = 0;
 // ==== Constructor and Destructor ====
@@ -177,9 +178,12 @@ void ServerManager::HandleClientActivity(int client_fd)
 	const ServerConfig &config = _clientToServer[client_fd]->GetServerConfig();
 	HTTPResponse response;
 	bool keepAlive = parser.IsKeepAlive();
-	// response.SetHeader("Connection", keepAlive ? "keep-alive" : "close");
+	response.SetHeader("Connection", keepAlive ? "keep-alive" : "close");
+	std::cout << LIGHTGREEN << "Parser header: " << parser.GetHeadersString() << ESCAPE << std::endl;
+	std::cout << GREEN << "Parser content: " << parser.GetBody() << ESCAPE << std::endl;
 	std::string httpResponse = response.GenerateResponse(parser, config);
 	// Send the response back to the client
+	std::cout << YELLOW << "Response: " << httpResponse << ESCAPE << std::endl;
 	send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
 
 	parser.ResetRequest(); // Reset parser for next request
@@ -188,7 +192,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 	{
 		parser.ResetRequest();
 		_clientLastActivity[client_fd] = std::time(NULL);
-		std::cout << "Server Manager | Keep-Alive active for client fd: " << client_fd << std::endl;
+		// std::cout << "Server Manager | Keep-Alive active for client fd: " << client_fd << std::endl;
 	}
 	else
 	{
