@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 14:27:33 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 15:36:59 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,7 +174,12 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 		}
 	}
 
-	std::string destination = location.uploadStore + "/upload.txt";
+	std::string destination;
+	if (location.uploadStore == "/tmp")
+	{
+		destination = fullPath + "/upload.txt";
+	} else
+		destination = location.uploadStore + "/upload.txt";
 	
 	if (std::find(location.methods.begin(), location.methods.end(), "POST") == location.methods.end())
 		return (SetResponseToError(405, version, "Method Not Allowed"), ResponseToString());
