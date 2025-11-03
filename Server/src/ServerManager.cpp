@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 17:47:23 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 19:36:58 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ void ServerManager::AddListenSocketsToEpoll()
 		{
 			struct  epoll_event epollEvent;
 			std::memset(&epollEvent, 0, sizeof(epollEvent));
-			epollEvent.events = EPOLLIN | EPOLLET; // Edge-triggered for listening sockets
+			epollEvent.events = EPOLLIN | EPOLLOUT | EPOLLET; // Edge-triggered for listening sockets
 			epollEvent.data.fd = socketFDs[j];
 			if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, socketFDs[j], &epollEvent) == -1)
 				throw std::runtime_error("Server Manager | failed to add server socket to epoll");
@@ -105,7 +105,7 @@ void ServerManager::HandleNewConnections(int listening, Server &server)
 		// Add client socket to epoll monitoring
 		struct epoll_event event;
 		std::memset(&event, 0, sizeof(event));
-		event.events = EPOLLIN;
+		event.events = EPOLLIN | EPOLLOUT | EPOLLET;
 		event.data.fd = client_fd;
 
 		// Add to epoll
@@ -195,8 +195,6 @@ void ServerManager::HandleClientActivity(int client_fd)
 	// Send the response back to the client
 	std::cout << YELLOW << "Response: " << httpResponse << ESCAPE << std::endl;
 	send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
-
-
 	// CloseClient(client_fd);
 	// if (parser.IsKeepAlive())
 	// {
@@ -206,7 +204,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 	// }
 	// else
 	// {
-		CloseClient(client_fd);
+	CloseClient(client_fd);
 	// }
 }
 
@@ -258,7 +256,6 @@ void ServerManager::RunLoop()
 
 		for (int i = 0; i < numberOfEvents; ++i) // for each event
 		{
-			std::cout << "MEOW" << std::endl;
 			int fileDescriptor = events[i].data.fd;
 			bool isListening = false;
 			
