@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:31:18 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 19:35:04 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/03 08:02:56 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 // ==== Constructors ====
 
 // Default constructor for location blocks
-LocationConfig::LocationConfig() : autoIndex(false), uploadEnable(false)
+LocationConfig::LocationConfig() : autoIndex(true), uploadEnable(false)
 {
     path = "/";
     root = "";
