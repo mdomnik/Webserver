@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 15:49:59 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/03 17:47:23 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,6 @@ void ServerManager::HandleClientActivity(int client_fd)
 	{
 		return; // wait for more data
 	}
-	std::cout << "SENDING " << status << std::endl;
 	if (status == NotImplemented) {
 		HTTPResponse error;
 		error.SetResponseToError(405, "HTTP/1.1", "Method Not allowed", _clientToServer[client_fd]->GetServerConfig());
@@ -154,15 +153,15 @@ void ServerManager::HandleClientActivity(int client_fd)
 		CloseClient(client_fd);
 		return;
 	}
-	if (status == PayloadExceeded)
-	{
-		HTTPResponse error;
-		error.SetResponseToError(413, "HTTP/1.1", "Payload too large", _clientToServer[client_fd]->GetServerConfig());
-		std::string payload = error.ResponseToString();
-		send(client_fd, payload.c_str(), payload.size(), 0);
-		CloseClient(client_fd);
-		return;
-	}
+	// if (status == PayloadExceeded)
+	// {
+	// 	HTTPResponse error;
+	// 	error.SetResponseToError(413, "HTTP/1.1", "Payload too large", _clientToServer[client_fd]->GetServerConfig());
+	// 	std::string payload = error.ResponseToString();
+	// 	send(client_fd, payload.c_str(), payload.size(), 0);
+	// 	CloseClient(client_fd);
+	// 	return;
+	// }
 	if (status != Success || !parser.IsComplete()) // If there is any error found in parsing
 	{
 		// notify the server admin and close the connection
@@ -172,6 +171,16 @@ void ServerManager::HandleClientActivity(int client_fd)
 		std::string badresponse = error.ResponseToString();
 		send(client_fd, badresponse.c_str(), badresponse.size(), 0);
 		// CloseClient(client_fd);
+		return;
+	}
+
+	if (parser.GetBody().size() > _clientToServer[client_fd]->GetServerConfig().clientMaxBodySize)
+	{
+		HTTPResponse error;
+		error.SetResponseToError(413, "HTTP/1.1", "Payload too large", _clientToServer[client_fd]->GetServerConfig());
+		std::string payload = error.ResponseToString();
+		send(client_fd, payload.c_str(), payload.size(), 0);
+		CloseClient(client_fd);
 		return;
 	}
 
@@ -249,6 +258,7 @@ void ServerManager::RunLoop()
 
 		for (int i = 0; i < numberOfEvents; ++i) // for each event
 		{
+			std::cout << "MEOW" << std::endl;
 			int fileDescriptor = events[i].data.fd;
 			bool isListening = false;
 			

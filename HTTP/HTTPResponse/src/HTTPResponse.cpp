@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:35 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 15:54:02 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/03 18:34:25 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/HTTPResponse.hpp"
 
 // ==== Constructor ====
-HTTPResponse::HTTPResponse() {}
+HTTPResponse::HTTPResponse() : ourLittleSecret(0) {}
 
 // ==== Getters ====
 std::string HTTPResponse::GetStatus() const { return (_statusLine); }

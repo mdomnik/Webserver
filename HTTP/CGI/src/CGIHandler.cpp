@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 20:13:05 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 13:53:05 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 18:36:29 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,7 @@ void CGIHandler::SetupEnvironment(const HTTPRequest &request)
 
 std::string CGIHandler::BuildEnvString(const std::string &key, const std::string &value) { return (key + "=" + value); }
 
-std::string CGIHandler::Execute()
+std::string CGIHandler::Execute(int& has_failed)
 {
 	int pipein[2];
 	int pipeout[2];
@@ -196,7 +196,12 @@ std::string CGIHandler::Execute()
 		_cgiOutput.append(buffer, bytesRead);
 	close(pipeout[0]);
 	std::cout << "cgi output: " << _cgiOutput <<std::endl;
-	waitpid(pid, NULL, 0); // Wait for child process to finish
+	int status;
+	waitpid(pid, &status, 0); // Wait for child process to finish
+	if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+	{
+		has_failed = 1;
+		return ("");
+	}
 	return (_cgiOutput);
 }
-

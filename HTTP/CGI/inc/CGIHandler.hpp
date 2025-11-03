@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIHandler.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 20:13:07 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 21:55:02 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/03 18:35:56 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 
 
 #include "../../HTTP/HTTPRequest/inc/HTTPRequest.hpp"
+#include "../../HTTPResponse/inc/HTTPResponse.hpp"
 #include "../../../Config/inc/ServerConfig.hpp"
 
 class CGIHandler
@@ -43,7 +44,7 @@ class CGIHandler
 		CGIHandler(const std::string &scriptPath, const HTTPRequest &request, const LocationConfig &location);
 		~CGIHandler();
 		
-		std::string Execute();
+		std::string Execute(int& has_failed);
 };
 
 std::string decodeChunkedBody(const std::string &raw);

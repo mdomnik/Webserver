@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/31 14:12:00 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 22:11:13 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/03 17:18:01 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,6 @@ int main(int argc, char **argv)
 		else
 			configPath = "ConfigFiles/default.conf";
 
-		std::cout << "🧩 Starting Webserv with config: " << configPath << std::endl;
 
 		ConfigParser parser(configPath);
 		std::vector<ServerConfig> configs = parser.parse();

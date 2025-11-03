@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 15:59:33 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 18:36:12 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,12 +37,19 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 		try
 		{
 			CGIHandler cgi(fullPath, req, location);
-			std::string cgiOutput = cgi.Execute();
+			std::string cgiOutput = cgi.Execute(ourLittleSecret);
 			std::cout << "cgioutput content: " << cgiOutput << std::endl;
 			std::cout << "cgioutput length: " << cgiOutput.size() << std::endl;
+			if (ourLittleSecret == 1)
+			{
+				std::cout << "CGI reported failure." << std::endl;
+				SetResponseToError(500, version, "Internal Server Error", config);
+				ourLittleSecret = 0;
+				return (ResponseToString());
+			}
 			if (cgiOutput.empty())
 			{
-				std::string customPage = LoadErrorPage(404, config);
+				/* std::string customPage = LoadErrorPage(404, config);
 				if (!customPage.empty())
 				{
 					std::cout << "CGI output empty, serving custom 404 page." << std::endl;
@@ -50,7 +57,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 					SetHeader("Content-Type", "text/html");
 					SetBody(customPage);
 					return (ResponseToString());
-				}
+				} */
 				SetResponseToError(404, version, "Not Found", config);
 				return (ResponseToString());
 			}
@@ -92,29 +99,22 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 
 	if (!IsFile(fullPath))
 	{
-		std::string customPage = LoadErrorPage(404, config);
-		if (!customPage.empty())
-		{
-			SetStatus(404, version, "Not Found");
-			SetHeader("Content-Type", "text/html");
-			SetBody(customPage);
-		}
-		else
-			SetResponseToError(404, version, "Not Found", config);
+
+		SetResponseToError(404, version, "Not Found", config);
 		return (ResponseToString());
 	}
 
 	std::ifstream file(fullPath.c_str(), std::ios::in | std::ios::binary);
 	if (!file.is_open())
 	{
-		std::string customPage = LoadErrorPage(403, config);
+		/* std::string customPage = LoadErrorPage(403, config);
 		if (!customPage.empty())
 		{
 			SetStatus(403, version, "Forbidden");
 			SetHeader("Content-Type", "text/html");
 			SetBody(customPage);
 		}
-		else
+		else */
 			SetResponseToError(403, version, "Forbidden", config);
 		return (ResponseToString());
 	}
@@ -142,17 +142,24 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 		try
 		{
 			CGIHandler cgi(fullPath, req, location);
-			std::string cgiOutput = cgi.Execute();
+			std::string cgiOutput = cgi.Execute(ourLittleSecret);
+			if (ourLittleSecret == 1)
+			{
+				std::cout << "CGI reported failure." << std::endl;
+				SetResponseToError(500, version, "Internal Server Error", config);
+				ourLittleSecret = 0;
+				return (ResponseToString());
+			}
 			if (cgiOutput.empty())
 			{
-				std::string customPage = LoadErrorPage(404, config);
+				/* std::string customPage = LoadErrorPage(404, config);
 				if (!customPage.empty())
 				{
 					SetStatus(404, version, "Not Found");
 					SetHeader("Content-Type", "text/html");
 					SetBody(customPage);
 				}
-				else
+				else */
 				SetResponseToError(404, version, "Not Found", config);
 				return (ResponseToString());
 			}
@@ -161,14 +168,14 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 		catch(const std::exception& e)
 		{
 			std::cerr << "CGI Execution Error: " << e.what() << std::endl;
-			std::string customPage = LoadErrorPage(500, config);
+			/* std::string customPage = LoadErrorPage(500, config);
 			if (!customPage.empty())
 			{
 				SetStatus(500, version, "Internal Server Error");
 				SetHeader("Content-Type", "text/html");
 				SetBody(customPage);
 			}
-			else
+			else */
 			SetResponseToError(500, version, "Internal Server Error", config);
 			return (ResponseToString());
 		}
@@ -180,37 +187,37 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 		destination = fullPath + "/upload.txt";
 	} else
 		destination = location.uploadStore + "/upload.txt";
-	
+
 	if (std::find(location.methods.begin(), location.methods.end(), "POST") == location.methods.end())
 	{
 		return (SetResponseToError(405, version, "Method Not Allowed", config), ResponseToString());
 	}
 	if (!location.uploadEnable)
 	{
-		std::string customPage = LoadErrorPage(403, config);
+		/* std::string customPage = LoadErrorPage(403, config);
 		if (!customPage.empty())
 		{
 			SetStatus(403, version, "Forbidden");
 			SetHeader("Content-Type", "text/html");
 			SetBody(customPage);
 		}
-		else
+		else */
 			SetResponseToError(403, version, "Forbidden", config);
 		return (ResponseToString());
 	}
 	
-	std::string destination = location.uploadStore + "/upload.txt";
+	// std::string destination = location.uploadStore + "/upload.txt";
 	std::ofstream outFile(destination.c_str(), std::ios::out | std::ios::binary);
 	if (!outFile.is_open())
 	{
-		std::string customPage = LoadErrorPage(500, config);
+		/* std::string customPage = LoadErrorPage(500, config);
 		if (!customPage.empty())
 		{
 			SetStatus(500, version, "Internal Server Error");
 			SetHeader("Content-Type", "text/html");
 			SetBody(customPage);
 		}
-		else
+		else */
 			SetResponseToError(500, version, "Internal Server Error", config);
 		return (ResponseToString());
 	}
@@ -238,14 +245,14 @@ std::string HTTPResponse::HandleDELETE(const HTTPRequest &req, const ServerConfi
 
 	if (remove(fullPath.c_str()) != 0)
 	{
-		std::string customPage = LoadErrorPage(404, config);
+		/* std::string customPage = LoadErrorPage(404, config);
 		if (!customPage.empty())
 		{
 			SetStatus(404, version, "Not Found");
 			SetHeader("Content-Type", "text/html");
 			SetBody(customPage);
 		}
-		else
+		else */
 			SetResponseToError(404, version, "Not Found", config);
 		return (ResponseToString());
 	}
