@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:35 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 08:12:15 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 15:54:02 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ std::string HTTPResponse::GenerateResponse(const HTTPRequest &request, const Ser
 		return (HandleDELETE(request, config));
 	}
 	else
-		return (SetResponseToError(405, request.GetHTTPVersion(), "Method Not Allowed"), ResponseToString());
+		return (SetResponseToError(405, request.GetHTTPVersion(), "Method Not Allowed", config), ResponseToString());
 }
 
 std::string HTTPResponse::LoadErrorPage(int statusCode, const ServerConfig &config)
@@ -127,28 +127,22 @@ std::string HTTPResponse::LoadErrorPage(int statusCode, const ServerConfig &conf
 	return ("");
 }
 
-void HTTPResponse::SetResponseToError(int code, const std::string &version, const std::string &reason)
+void HTTPResponse::SetResponseToError(int code, const std::string &version, const std::string &reason, const ServerConfig& config)
 {
 	SetStatus(code, version, reason);
 
-	std::ostringstream stream;
-	stream << "./www/errors/" << code << ".html";
-	std::string errorPath = stream.str();
-	
-	struct stat stats;
-	int DoesPageExist = stat(errorPath.c_str(), &stats);
-	
 	std::string body;
-
-	if (DoesPageExist)
+	std::map<int, std::string>::const_iterator it = config.errorPages.find(code);
+	if (it != config.errorPages.end())
 	{
-		std::ifstream file(errorPath.c_str(), std::ios::in | std::ios::binary);
+		const std::string &errorPagePath = it->second;
+		std::ifstream file(errorPagePath.c_str());
+
 		if (file.is_open())
 		{
-			std::ostringstream fileContent;
-			fileContent << file.rdbuf();
-			file.close();
-			body = fileContent.str();
+			std::ostringstream ss;
+			ss << file.rdbuf();
+			body = ss.str();
 		}
 	}
 

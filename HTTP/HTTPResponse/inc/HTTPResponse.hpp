@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:20 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 08:12:00 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 15:51:09 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ class HTTPResponse
 		// Response generation
 		std::string GenerateResponse(const HTTPRequest &request, const ServerConfig &config);
 		std::string ResponseToString() const;
-		void SetResponseToError(int statusCode, const std::string &httpVersion, const std::string &reason);
+		void SetResponseToError(int code, const std::string &version, const std::string &reason, const ServerConfig& config);
 		
 		// Getters
 		std::string GetStatus() const;
