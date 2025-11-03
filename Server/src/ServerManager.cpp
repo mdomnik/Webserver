@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 23:37:44 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/04 00:10:07 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,15 +153,6 @@ void ServerManager::HandleClientActivity(int client_fd)
 		CloseClient(client_fd);
 		return;
 	}
-	// if (status == PayloadExceeded)
-	// {
-	// 	HTTPResponse error;
-	// 	error.SetResponseToError(413, "HTTP/1.1", "Payload too large", _clientToServer[client_fd]->GetServerConfig());
-	// 	std::string payload = error.ResponseToString();
-	// 	send(client_fd, payload.c_str(), payload.size(), 0);
-	// 	CloseClient(client_fd);
-	// 	return;
-	// }
 	if (status != Success || !parser.IsComplete()) // If there is any error found in parsing
 	{
 		// notify the server admin and close the connection
@@ -191,7 +182,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 	std::cout << LIGHTGREEN << "Parser header: " << parser.GetHeadersString() << ESCAPE << std::endl;
 	std::cout << GREEN << "Parser content: " << parser.GetBody() << ESCAPE << std::endl;
 	std::string httpResponse = response.GenerateResponse(parser, config);
-	std::cout << "Resposne: " << httpResponse << std::endl;
+	std::cout << "Response: " << httpResponse << std::endl;
 	// Send the response back to the client
 	std::cout << YELLOW << "Response: " << httpResponse << ESCAPE << std::endl;
 	send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
@@ -277,7 +268,7 @@ void ServerManager::RunLoop()
 			if (!isListening)
 				HandleClientActivity(fileDescriptor); // handle client activity
 		}
-		// CheckTimeouts();
+		CheckTimeouts();
 	}
 	ShutdownServers(); //interrupted, shutdown servers
 	std::cout << "Server Manager | Graceful shutdown complete.\n";
@@ -309,17 +300,17 @@ void ServerManager::ShutdownServers()
 	std::cout << "Server Manager | All servers shut down" << std::endl;
 }
 
-// void ServerManager::CheckTimeouts()
-// {
-//     time_t now = std::time(NULL);
-//     std::vector<int> toClose;
+void ServerManager::CheckTimeouts()
+{
+    time_t now = std::time(NULL);
+    std::vector<int> toClose;
 
-//     for (std::map<int, time_t>::iterator it = _clientLastActivity.begin(); it != _clientLastActivity.end(); ++it)
-//     {
-//         if (now - it->second > 10) // 10 seconds timeout
-//             toClose.push_back(it->first);
-//     }
+    for (std::map<int, time_t>::iterator it = _clientLastActivity.begin(); it != _clientLastActivity.end(); ++it)
+    {
+        if (now - it->second > 10) // 10 seconds timeout
+            toClose.push_back(it->first);
+    }
 
-//     for (size_t i = 0; i < toClose.size(); ++i)
-//         CloseClient(toClose[i]);
-// }
+    for (size_t i = 0; i < toClose.size(); ++i)
+        CloseClient(toClose[i]);
+}

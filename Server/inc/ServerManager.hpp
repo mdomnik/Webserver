@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:08:58 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 21:12:54 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 00:12:20 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ class ServerManager
 		std::vector<Server>	_servers; // list of managed servers
 		std::map<int, Server*> _clientToServer; // map client fds to their servers
 		std::map<int, HTTPRequest> _clientParsers; // map client fds to their HTTP request parsers
-		// std::map<int, time_t> _clientLastActivity; // map to track the last activity of each connected client
+		std::map<int, time_t> _clientLastActivity; // map to track the last activity of each connected client
 		
 		// initialization methods
 		void InitServers(const std::vector<ServerConfig>& serverConfigs);
@@ -47,8 +47,9 @@ class ServerManager
 		void AddListenSocketsToEpoll();
 		void HandleNewConnections(int listening, Server &server);
 		void HandleClientActivity(int clientFD);
+		void HandleCGIOutput(int cgi_fd);
 		void CloseClient(int clientFD);
-		// void CheckTimeouts();
+		void CheckTimeouts();
 
 	public:
 		// Constructor and Destructor
