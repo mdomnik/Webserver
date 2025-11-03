@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 19:54:56 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 23:37:44 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,7 +170,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 		error.SetResponseToError(400, "HTTP/1.1", "Bad Request", _clientToServer[client_fd]->GetServerConfig());
 		std::string badresponse = error.ResponseToString();
 		send(client_fd, badresponse.c_str(), badresponse.size(), 0);
-		// CloseClient(client_fd);
+		CloseClient(client_fd);
 		return;
 	}
 
