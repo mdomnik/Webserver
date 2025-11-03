@@ -19,10 +19,10 @@ files = [f for f in os.listdir(UPLOAD_FOLDER) if os.path.isfile(os.path.join(UPL
 # Generate HTML
 print("Content-Type: text/html\n")
 print("<!DOCTYPE html>")
-print('<html><head><link rel="stylesheet" href="/css/download.css"></link></head><body><h1>Uploaded Files</h1><ul>')
+print("<html><head><link rel=\"stylesheet\" href=\"/css/download.css\"></link></head><body><h1>Uploaded Files</h1><ul>")
 for file in files:
     # HTML-escape file name for safety
     safe_file = file.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-    print(f'<li><a href="/uploads/{safe_file}" download>{safe_file}</a></li>')
+    print(f'<li><a href="/uploads/{safe_file}" download>{safe_file}</a><button onclick="deleteFile(\'{safe_file}\')">Delete</button></li>')
 print('<a href="../index.html">Go back</a>')
-print("</ul></body></html>")
+print("</ul><script>async function deleteFile(name){const response=await fetch('/uploads/'+encodeURIComponent(name),{method:'DELETE'});alert(response.ok? 'Deleted!' : 'Failed: ' + response.status);if(response.ok){location.reload();}}</script></body></html>")

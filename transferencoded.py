@@ -7,7 +7,7 @@ PORT = 8079
 with socket.create_connection((HOST, PORT)) as s:
     # Send the HTTP headers first
     headers = (
-        "POST / HTTP/1.1\r\n"
+        "POST /cgi-bin/T_Post.py HTTP/1.1\r\n"
         f"Host: {HOST}\r\n"
         "Transfer-Encoding: chunked\r\n"
         "Content-Type: text/plain\r\n"

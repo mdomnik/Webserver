@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 08:11:47 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 14:14:04 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -457,6 +457,7 @@ ParseStatus HTTPRequest::ParseChunkedBody()
     {
         // Find CRLF marking end of chunk-size line
         size_t endOfSize = _buffer.find(CRLF, pos);
+		std::cout << BLUE << "endofsize: " << endOfSize << BLUE << std::endl;
         if (endOfSize == std::string::npos)
             return Incomplete; // need more data
 

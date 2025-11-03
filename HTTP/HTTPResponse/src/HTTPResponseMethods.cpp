@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 08:14:34 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 14:27:33 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,6 +188,7 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 	// If upload is not enabled and file does not exist, return 403 (ADJUSTED LOGIC FOR POST METHOD PROCESSING)
 	if (!location.uploadEnable && !fileExists)
 	{
+		// std::cout << RED << "ITS HERE" << ESCAPE << std::endl;
 		std::string customPage = LoadErrorPage(403, config);
 		if (!customPage.empty())
 		{

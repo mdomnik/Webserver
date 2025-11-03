@@ -308,3 +308,10 @@ Content-Length: 50
 script path ./www/YoupiBanane/directory/youpi.bla
 
 Server Manager | Closed connection for client fd: 5
+
+Received termination signal (2). Shutting down gracefully...
+Server | Stopped and closed all connections.
+Server Manager | All servers shut down
+Server Manager | Graceful shutdown complete.
+Server | Stopped and closed all connections.
+Server Manager | All servers shut down
