@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 19:36:58 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 19:54:56 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ void ServerManager::AddListenSocketsToEpoll()
 		{
 			struct  epoll_event epollEvent;
 			std::memset(&epollEvent, 0, sizeof(epollEvent));
-			epollEvent.events = EPOLLIN | EPOLLOUT | EPOLLET; // Edge-triggered for listening sockets
+			epollEvent.events = EPOLLIN | EPOLLET | EPOLLOUT; // Edge-triggered for listening sockets
 			epollEvent.data.fd = socketFDs[j];
 			if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, socketFDs[j], &epollEvent) == -1)
 				throw std::runtime_error("Server Manager | failed to add server socket to epoll");
@@ -105,7 +105,7 @@ void ServerManager::HandleNewConnections(int listening, Server &server)
 		// Add client socket to epoll monitoring
 		struct epoll_event event;
 		std::memset(&event, 0, sizeof(event));
-		event.events = EPOLLIN | EPOLLOUT | EPOLLET;
+		event.events = EPOLLIN ;
 		event.data.fd = client_fd;
 
 		// Add to epoll
