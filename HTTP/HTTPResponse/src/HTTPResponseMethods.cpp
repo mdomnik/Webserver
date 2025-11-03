@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseMethods.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 20:21:40 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/03 08:14:34 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,6 +106,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 	std::ifstream file(fullPath.c_str(), std::ios::in | std::ios::binary);
 	if (!file.is_open())
 	{
+		std::cout << RED << "Failed to open file: " << fullPath << ESCAPE << std::endl;
 		std::string customPage = LoadErrorPage(403, config);
 		if (!customPage.empty())
 		{
@@ -172,12 +173,20 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 			return (ResponseToString());
 		}
 	}
+
+	std::string destination = location.uploadStore + "/upload.txt";
 	
 	if (std::find(location.methods.begin(), location.methods.end(), "POST") == location.methods.end())
-	{
 		return (SetResponseToError(405, version, "Method Not Allowed"), ResponseToString());
+
+	bool fileExists = false;
+	std::ifstream fileCheck(destination.c_str());
+	if (fileCheck.good()) {
+		fileExists = true;
 	}
-	if (!location.uploadEnable)
+		// changed to here so uploadEnable only checks when a file needs to be uploaded!
+	// If upload is not enabled and file does not exist, return 403 (ADJUSTED LOGIC FOR POST METHOD PROCESSING)
+	if (!location.uploadEnable && !fileExists)
 	{
 		std::string customPage = LoadErrorPage(403, config);
 		if (!customPage.empty())
@@ -190,8 +199,7 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 			SetResponseToError(403, version, "Forbidden");
 		return (ResponseToString());
 	}
-	
-	std::string destination = location.uploadStore + "/upload.txt";
+
 	std::ofstream outFile(destination.c_str(), std::ios::out | std::ios::binary);
 	if (!outFile.is_open())
 	{
@@ -209,9 +217,15 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 	outFile << req.GetBody();
 	outFile.close();
 
-	SetStatus(201, version, "Created");
-	SetHeader("Content-Type", "text/html");
-	SetBody("File uploaded successfully to " + destination);
+	if (!fileExists)
+	{
+		SetStatus(201, version, "Created");
+		SetHeader("Content-Type", "text/html");
+		SetBody("File uploaded successfully to " + destination);
+	} else {
+		SetStatus(200, version, "OK");
+		SetBody("File uploaded successfully to " + destination);
+	}
 
 	return (ResponseToString());
 }

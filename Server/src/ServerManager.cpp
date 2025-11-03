@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/02 21:13:26 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/03 08:17:27 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/ServerManager.hpp"
+#include "../../Config/inc/ConfigAnsi.hpp"
 // Global flag updated by the signal handler
 volatile sig_atomic_t g_stopSignal = 0;
 // ==== Constructor and Destructor ====
@@ -176,11 +177,14 @@ void ServerManager::HandleClientActivity(int client_fd)
 
 	const ServerConfig &config = _clientToServer[client_fd]->GetServerConfig();
 	HTTPResponse response;
-	//bool keepAlive = parser.IsKeepAlive();
+	// bool keepAlive = parser.IsKeepAlive();
 	// response.SetHeader("Connection", keepAlive ? "keep-alive" : "close");
+	std::cout << LIGHTGREEN << "Parser header: " << parser.GetHeadersString() << ESCAPE << std::endl;
+	std::cout << GREEN << "Parser content: " << parser.GetBody() << ESCAPE << std::endl;
 	std::string httpResponse = response.GenerateResponse(parser, config);
 	std::cout << "Resposne: " << httpResponse << std::endl;
 	// Send the response back to the client
+	std::cout << YELLOW << "Response: " << httpResponse << ESCAPE << std::endl;
 	send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
 
 
