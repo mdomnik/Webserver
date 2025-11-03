@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 08:17:27 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 15:49:59 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -148,7 +148,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 	std::cout << "SENDING " << status << std::endl;
 	if (status == NotImplemented) {
 		HTTPResponse error;
-		error.SetResponseToError(405, "HTTP/1.1", "Method Not allowed");
+		error.SetResponseToError(405, "HTTP/1.1", "Method Not allowed", _clientToServer[client_fd]->GetServerConfig());
 		std::string notimplresponse = error.ResponseToString();
 		send(client_fd, notimplresponse.c_str(), notimplresponse.size(), 0);
 		CloseClient(client_fd);
@@ -157,7 +157,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 	if (status == PayloadExceeded)
 	{
 		HTTPResponse error;
-		error.SetResponseToError(413, "HTTP/1.1", "Payload too large");
+		error.SetResponseToError(413, "HTTP/1.1", "Payload too large", _clientToServer[client_fd]->GetServerConfig());
 		std::string payload = error.ResponseToString();
 		send(client_fd, payload.c_str(), payload.size(), 0);
 		CloseClient(client_fd);
@@ -168,7 +168,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 		// notify the server admin and close the connection
 		std::cerr << "Server Manager | Wrong Request from Client " << client_fd << ": " << parser.GetErrorMessage() << std::endl;
 		HTTPResponse error;
-		error.SetResponseToError(400, "HTTP/1.1", "Bad Request");
+		error.SetResponseToError(400, "HTTP/1.1", "Bad Request", _clientToServer[client_fd]->GetServerConfig());
 		std::string badresponse = error.ResponseToString();
 		send(client_fd, badresponse.c_str(), badresponse.size(), 0);
 		// CloseClient(client_fd);

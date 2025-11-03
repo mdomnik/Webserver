@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseMethods.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 14:27:33 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/03 15:54:29 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 
 	if (std::find(location.methods.begin(), location.methods.end(), "GET") == location.methods.end())
 	{
-		return (SetResponseToError(405, version, "Method Not Allowed"), ResponseToString());
+		return (SetResponseToError(405, version, "Method Not Allowed", config), ResponseToString());
 	}
 
 	std::cerr << MAGENTA << "Handling GET for path: " << fullPath << ESCAPE << std::endl;
@@ -38,7 +38,8 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 		{
 			CGIHandler cgi(fullPath, req, location);
 			std::string cgiOutput = cgi.Execute();
-			// std::cout << cgiOutput << std::endl;
+			std::cout << "cgioutput content: " << cgiOutput << std::endl;
+			std::cout << "cgioutput length: " << cgiOutput.size() << std::endl;
 			if (cgiOutput.empty())
 			{
 				std::string customPage = LoadErrorPage(404, config);
@@ -50,7 +51,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 					SetBody(customPage);
 					return (ResponseToString());
 				}
-				SetResponseToError(404, version, "Not Found");
+				SetResponseToError(404, version, "Not Found", config);
 				return (ResponseToString());
 			}
 			std::cout << "CGI executed successfully." << std::endl;
@@ -59,7 +60,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 		catch(const std::exception& e)
 		{
 			std::cerr << "CGI Execution Error: " << e.what() << std::endl;
-			SetResponseToError(500, version, "Internal Server Error");
+			SetResponseToError(500, version, "Internal Server Error", config);
 			return (ResponseToString());
 		}
 		
@@ -84,7 +85,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 			SetBody(buildAutoIndexPage(fullPath, path));
 			return (ResponseToString());
 		} else {
-			SetResponseToError(404, version, "Not Found");
+			SetResponseToError(404, version, "Not Found", config);
 			return (ResponseToString());
 		}
 	}
@@ -99,14 +100,13 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 			SetBody(customPage);
 		}
 		else
-			SetResponseToError(404, version, "Not Found");
+			SetResponseToError(404, version, "Not Found", config);
 		return (ResponseToString());
 	}
 
 	std::ifstream file(fullPath.c_str(), std::ios::in | std::ios::binary);
 	if (!file.is_open())
 	{
-		std::cout << RED << "Failed to open file: " << fullPath << ESCAPE << std::endl;
 		std::string customPage = LoadErrorPage(403, config);
 		if (!customPage.empty())
 		{
@@ -115,7 +115,7 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 			SetBody(customPage);
 		}
 		else
-			SetResponseToError(403, version, "Forbidden");
+			SetResponseToError(403, version, "Forbidden", config);
 		return (ResponseToString());
 	}
 
@@ -153,7 +153,7 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 					SetBody(customPage);
 				}
 				else
-				SetResponseToError(404, version, "Not Found");
+				SetResponseToError(404, version, "Not Found", config);
 				return (ResponseToString());
 			}
 			return (ResponseFromCGI(cgiOutput, version));
@@ -169,26 +169,17 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 				SetBody(customPage);
 			}
 			else
-			SetResponseToError(500, version, "Internal Server Error");
+			SetResponseToError(500, version, "Internal Server Error", config);
 			return (ResponseToString());
 		}
 	}
-
-	std::string destination = location.uploadStore + "/upload.txt";
 	
 	if (std::find(location.methods.begin(), location.methods.end(), "POST") == location.methods.end())
-		return (SetResponseToError(405, version, "Method Not Allowed"), ResponseToString());
-
-	bool fileExists = false;
-	std::ifstream fileCheck(destination.c_str());
-	if (fileCheck.good()) {
-		fileExists = true;
-	}
-		// changed to here so uploadEnable only checks when a file needs to be uploaded!
-	// If upload is not enabled and file does not exist, return 403 (ADJUSTED LOGIC FOR POST METHOD PROCESSING)
-	if (!location.uploadEnable && !fileExists)
 	{
-		// std::cout << RED << "ITS HERE" << ESCAPE << std::endl;
+		return (SetResponseToError(405, version, "Method Not Allowed", config), ResponseToString());
+	}
+	if (!location.uploadEnable)
+	{
 		std::string customPage = LoadErrorPage(403, config);
 		if (!customPage.empty())
 		{
@@ -197,10 +188,11 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 			SetBody(customPage);
 		}
 		else
-			SetResponseToError(403, version, "Forbidden");
+			SetResponseToError(403, version, "Forbidden", config);
 		return (ResponseToString());
 	}
-
+	
+	std::string destination = location.uploadStore + "/upload.txt";
 	std::ofstream outFile(destination.c_str(), std::ios::out | std::ios::binary);
 	if (!outFile.is_open())
 	{
@@ -212,21 +204,15 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 			SetBody(customPage);
 		}
 		else
-			SetResponseToError(500, version, "Internal Server Error");
+			SetResponseToError(500, version, "Internal Server Error", config);
 		return (ResponseToString());
 	}
 	outFile << req.GetBody();
 	outFile.close();
 
-	if (!fileExists)
-	{
-		SetStatus(201, version, "Created");
-		SetHeader("Content-Type", "text/html");
-		SetBody("File uploaded successfully to " + destination);
-	} else {
-		SetStatus(200, version, "OK");
-		SetBody("File uploaded successfully to " + destination);
-	}
+	SetStatus(201, version, "Created");
+	SetHeader("Content-Type", "text/html");
+	SetBody("File uploaded successfully to " + destination);
 
 	return (ResponseToString());
 }
@@ -240,7 +226,7 @@ std::string HTTPResponse::HandleDELETE(const HTTPRequest &req, const ServerConfi
 
 	if (std::find(location.methods.begin(), location.methods.end(), "DELETE") == location.methods.end())
 	{
-		return (SetResponseToError(405, version, "Method Not Allowed"), ResponseToString());
+		return (SetResponseToError(405, version, "Method Not Allowed", config), ResponseToString());
 	}
 
 	if (remove(fullPath.c_str()) != 0)
@@ -253,7 +239,7 @@ std::string HTTPResponse::HandleDELETE(const HTTPRequest &req, const ServerConfi
 			SetBody(customPage);
 		}
 		else
-			SetResponseToError(404, version, "Not Found");
+			SetResponseToError(404, version, "Not Found", config);
 		return (ResponseToString());
 	}
 

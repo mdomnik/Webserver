@@ -9,12 +9,12 @@ int main() {
     ServerConfig cfg;
 
     // --- Test 404 Error Page ---
-    res.SetResponseToError(404, "HTTP/1.1", "Not Found");
+    res.SetResponseToError(404, "HTTP/1.1", "Not Found", cfg);
     std::string output404 = res.ResponseToString();
     std::cout << "----- 404 Response -----\n" << output404 << "\n-------------------------\n";
 
     // --- Test 500 Error Page ---
-    res.SetResponseToError(500, "HTTP/1.1", "Internal Server Error");
+    res.SetResponseToError(500, "HTTP/1.1", "Internal Server Error", cfg);
     std::string output500 = res.ResponseToString();
     std::cout << "----- 500 Response -----\n" << output500 << "\n-------------------------\n";
 
