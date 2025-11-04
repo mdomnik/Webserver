@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 16:45:25 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/04 17:29:33 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -446,7 +446,7 @@ void ServerManager::CheckTimeouts()
 {
     time_t now = std::time(NULL);
 	// const int CGI_TIMEOUT = 5;
-    std::vector<int> toClose;
+    // std::vector<int> toClose;
 	std::map<int, CGIState>::iterator it = _cgiState.begin();
 	while (it != _cgiState.end())
 	{
@@ -480,12 +480,12 @@ void ServerManager::CheckTimeouts()
 	    }
 	}
 
-    for (std::map<int, time_t>::iterator it = _clientLastActivity.begin(); it != _clientLastActivity.end(); ++it)
-    {
-        if (now - it->second > 10) // 10 seconds timeout
-            toClose.push_back(it->first);
-    }
+    // for (std::map<int, time_t>::iterator it = _clientLastActivity.begin(); it != _clientLastActivity.end(); ++it)
+    // {
+    //     if (now - it->second > 10) // 10 seconds timeout
+    //         toClose.push_back(it->first);
+    // }
 
-    for (size_t i = 0; i < toClose.size(); ++i)
-        CloseClient(toClose[i]);
+    // for (size_t i = 0; i < toClose.size(); ++i)
+    //     CloseClient(toClose[i]);
 }
