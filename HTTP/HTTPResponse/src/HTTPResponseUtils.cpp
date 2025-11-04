@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseUtils.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:17:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 08:15:08 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/04 13:26:29 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -325,28 +325,7 @@ std::string HTTPResponse::ResponseFromCGI(const std::string &out, const std::str
     return ResponseToString();
 }
 
-const LocationConfig& HTTPResponse::FindMostMatchingLocation(const ServerConfig &serverConfig, const std::string &requestPath)
-{
-	if (serverConfig.locations.empty()) {
-		throw std::runtime_error("No location configurations available");
-	}
 
-	const LocationConfig* bestMatch = &serverConfig.locations[0];
-	size_t bestLength = 0;
-
-	for (std::vector<LocationConfig>::const_iterator it = serverConfig.locations.begin();
-		it != serverConfig.locations.end(); ++it)
-	{
-		std::cout << RED << "Checking location: " << it->path << " against request path: " << requestPath << ESCAPE << std::endl;
-		if (requestPath.find(it->path) == 0 && it->path.size() > bestLength)
-		{
-			bestMatch = &(*it);
-			bestLength = it->path.size();
-		}
-	}
-	std::cout << BLUE << "Best matching location: " << bestMatch->path << ESCAPE << std::endl;
-	return (*bestMatch);
-}
 
 bool HTTPResponse::IsMethodAllowed(const LocationConfig &location, const std::string &method, const std::string &path)
 {

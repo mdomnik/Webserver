@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:08:58 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 00:12:20 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/04 13:12:01 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <ctime>
 #include <csignal>
+#include <set>
 
 #include "../../Config/inc/ServerConfig.hpp"
 #include "../../HTTP/HTTPRequest/inc/HTTPRequest.hpp"
@@ -37,7 +38,9 @@ class ServerManager
 		std::map<int, Server*> _clientToServer; // map client fds to their servers
 		std::map<int, HTTPRequest> _clientParsers; // map client fds to their HTTP request parsers
 		std::map<int, time_t> _clientLastActivity; // map to track the last activity of each connected client
-		
+		std::map<int, int> _cgiToClient;      // CGI fd → client fd
+		std::map<int, std::string> _cgiBuffers; // CGI fd → partial output
+		std::set<int> _cgiFDs; 
 		// initialization methods
 		void InitServers(const std::vector<ServerConfig>& serverConfigs);
 		void InitEpoll();
@@ -47,15 +50,17 @@ class ServerManager
 		void AddListenSocketsToEpoll();
 		void HandleNewConnections(int listening, Server &server);
 		void HandleClientActivity(int clientFD);
-		void HandleCGIOutput(int cgi_fd);
+		void HandleCGIOutput(int cgi_fd, uint32_t events);
 		void CloseClient(int clientFD);
 		void CheckTimeouts();
+		bool endsWith(const std::string &str, const std::string &suffix);
 
 	public:
 		// Constructor and Destructor
 		ServerManager(const std::vector<ServerConfig> &configs);
 		~ServerManager();
 
+		bool IsCGIRequest(const HTTPRequest &req, const ServerConfig &config, LocationConfig &loc);
 		// Server operations
 		void RunLoop(); // Main event loop
 		void RunLoopStep();

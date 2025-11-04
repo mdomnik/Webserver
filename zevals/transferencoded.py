@@ -1,14 +1,14 @@
 import socket
 
 HOST = "localhost"
-PORT = 8079
+PORT = 8080
 
 # Create a raw TCP socket
 with socket.create_connection((HOST, PORT)) as s:
     # Send the HTTP headers first
     headers = (
-        "GET /cgi-bin/E_Forever.py HTTP/1.1\r\n"
-        f"Host: {HOST}\r\n"
+        "POST /cgi-bin/E_Forever.py HTTP/1.1\r\n"
+        "Host: {HOST}\r\n"
         "Transfer-Encoding: chunked\r\n"
         "Content-Type: text/plain\r\n"
         "\r\n"

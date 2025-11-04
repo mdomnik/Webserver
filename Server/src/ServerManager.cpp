@@ -3,15 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 00:10:07 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/04 13:57:56 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/ServerManager.hpp"
 #include "../../Config/inc/ConfigAnsi.hpp"
+#include "../../HTTP/CGI/inc/CGIHandler.hpp"
+
 // Global flag updated by the signal handler
 volatile sig_atomic_t g_stopSignal = 0;
 // ==== Constructor and Destructor ====
@@ -29,6 +31,32 @@ ServerManager::ServerManager(const std::vector<ServerConfig> &configs) : _epollF
 ServerManager::~ServerManager()
 {
 	ShutdownServers();
+}
+
+bool ServerManager::endsWith(const std::string &str, const std::string &suffix)
+{
+    if (suffix.size() > str.size())
+        return false;
+    return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+}
+
+
+bool ServerManager::IsCGIRequest(const HTTPRequest &req, const ServerConfig &config, LocationConfig &loc)
+{
+    std::string _Path = req.GetPath();
+    // check if location defines cgi_path
+
+	loc = FindMostMatchingLocation(config, req.GetPath());
+	std::string root = loc.root.empty() ? "./www" : loc.root;
+	std::cout << "Location root: " << root << " and path " << _Path << std::endl;
+	loc.fullpath = root + _Path;
+    if (!loc.cgiPath.empty()) {
+        // basic file extension match
+        if (_Path.size() > 3 && 
+            (endsWith(_Path, ".py") || endsWith(_Path, ".php") || endsWith(_Path, ".pl")))
+            return true;
+    }
+    return false;
 }
 
 
@@ -140,6 +168,24 @@ void ServerManager::HandleClientActivity(int client_fd)
 	// Parse the HTTP request chunk
 	HTTPRequest& parser = _clientParsers[client_fd];
 	ParseStatus status = parser.ParseRequestChunk(chunk);
+	LocationConfig location;
+	if (IsCGIRequest(parser, _clientToServer[client_fd]->GetServerConfig(), location)) {
+    	CGIHandler cgi(location.fullpath, parser, location);
+    	int cgi_fd = cgi.StartCGI(); // returns non-blocking parent socket
+		
+    	_cgiToClient[cgi_fd] = client_fd;
+    	_cgiFDs.insert(cgi_fd);
+		
+    	struct epoll_event ev;
+    	memset(&ev, 0, sizeof(ev));
+    	ev.events = EPOLLIN | EPOLLHUP | EPOLLERR;
+    	ev.data.fd = cgi_fd;
+		if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, cgi_fd, &ev) == -1)
+			throw std::runtime_error("Failed to add CGI fd to epoll");
+		
+    	// Don’t handle client_fd further until CGI output arrives
+    	return;
+	}
 
 	if (status == Incomplete)
 	{
@@ -217,6 +263,43 @@ void ServerManager::CloseClient(int client_fd)
 	std::cout << "Server Manager | Closed connection for client fd: " << client_fd << std::endl;
 }
 
+void ServerManager::HandleCGIOutput(int cgi_fd, uint32_t events)
+{
+    if (events & (EPOLLHUP | EPOLLERR))
+    {
+        // CGI process crashed or closed early
+        epoll_ctl(_epollFD, EPOLL_CTL_DEL, cgi_fd, NULL);
+        close(cgi_fd);
+        _cgiFDs.erase(cgi_fd);
+		_cgiToClient.erase(cgi_fd);
+        return;
+    }
+
+    char buffer[4096];
+    ssize_t n = read(cgi_fd, buffer, sizeof(buffer));
+    if (n > 0)
+    {
+        _cgiBuffers[cgi_fd].append(buffer, n);
+    }
+    else if (n == 0)
+    {
+        // 🔹 CGI finished — send output to client
+        int client_fd = _cgiToClient[cgi_fd];
+        std::string &cgiOutput = _cgiBuffers[cgi_fd];
+
+        send(client_fd, cgiOutput.c_str(), cgiOutput.size(), 0);
+
+        // Cleanup
+        epoll_ctl(_epollFD, EPOLL_CTL_DEL, cgi_fd, NULL);
+        close(cgi_fd);
+        _cgiFDs.erase(cgi_fd);
+        _cgiToClient.erase(cgi_fd);
+        _cgiBuffers.erase(cgi_fd);
+
+        CloseClient(client_fd);
+    }
+}
+
 // ==== Public Server Operations ====
 void handleSignal(int signum)
 {
@@ -265,8 +348,16 @@ void ServerManager::RunLoop()
 				if (isListening)
 					break;
 			}
-			if (!isListening)
-				HandleClientActivity(fileDescriptor); // handle client activity
+			if (isListening)
+				continue;
+			if (_cgiFDs.find(fileDescriptor) != _cgiFDs.end())
+            {
+                HandleCGIOutput(fileDescriptor, events[i].events);
+            }
+            else
+            {
+                HandleClientActivity(fileDescriptor);
+            }
 		}
 		CheckTimeouts();
 	}

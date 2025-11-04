@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseMethods.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 17:24:16 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 18:36:12 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/04 12:49:48 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,47 +31,6 @@ std::string HTTPResponse::HandleGET(const HTTPRequest &req, const ServerConfig &
 	}
 
 	std::cerr << MAGENTA << "Handling GET for path: " << fullPath << ESCAPE << std::endl;
-
-	if (!location.cgiExtension.empty() && fullPath.size() >= location.cgiExtension.size() && fullPath.substr(fullPath.size() - location.cgiExtension.size()) == location.cgiExtension)
-	{
-		try
-		{
-			CGIHandler cgi(fullPath, req, location);
-			std::string cgiOutput = cgi.Execute(ourLittleSecret);
-			std::cout << "cgioutput content: " << cgiOutput << std::endl;
-			std::cout << "cgioutput length: " << cgiOutput.size() << std::endl;
-			if (ourLittleSecret == 1)
-			{
-				std::cout << "CGI reported failure." << std::endl;
-				SetResponseToError(500, version, "Internal Server Error", config);
-				ourLittleSecret = 0;
-				return (ResponseToString());
-			}
-			if (cgiOutput.empty())
-			{
-				/* std::string customPage = LoadErrorPage(404, config);
-				if (!customPage.empty())
-				{
-					std::cout << "CGI output empty, serving custom 404 page." << std::endl;
-					SetStatus(404, version, "Not Found");
-					SetHeader("Content-Type", "text/html");
-					SetBody(customPage);
-					return (ResponseToString());
-				} */
-				SetResponseToError(404, version, "Not Found", config);
-				return (ResponseToString());
-			}
-			std::cout << "CGI executed successfully." << std::endl;
-			return ResponseFromCGI(cgiOutput, version);
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << "CGI Execution Error: " << e.what() << std::endl;
-			SetResponseToError(500, version, "Internal Server Error", config);
-			return (ResponseToString());
-		}
-		
-	}
 	
 	if (IsDirectory(fullPath))
 	{
@@ -136,50 +95,6 @@ std::string HTTPResponse::HandlePOST(const HTTPRequest &req, const ServerConfig 
 	std::string root = location.root.empty() ? "./www" : location.root;
 	std::string fullPath = root + req.GetPath();
 	
-	
-	if (!location.cgiExtension.empty() && fullPath.size() >= location.cgiExtension.size() && fullPath.substr(fullPath.size() - location.cgiExtension.size()) == location.cgiExtension)
-	{
-		try
-		{
-			CGIHandler cgi(fullPath, req, location);
-			std::string cgiOutput = cgi.Execute(ourLittleSecret);
-			if (ourLittleSecret == 1)
-			{
-				std::cout << "CGI reported failure." << std::endl;
-				SetResponseToError(500, version, "Internal Server Error", config);
-				ourLittleSecret = 0;
-				return (ResponseToString());
-			}
-			if (cgiOutput.empty())
-			{
-				/* std::string customPage = LoadErrorPage(404, config);
-				if (!customPage.empty())
-				{
-					SetStatus(404, version, "Not Found");
-					SetHeader("Content-Type", "text/html");
-					SetBody(customPage);
-				}
-				else */
-				SetResponseToError(404, version, "Not Found", config);
-				return (ResponseToString());
-			}
-			return (ResponseFromCGI(cgiOutput, version));
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << "CGI Execution Error: " << e.what() << std::endl;
-			/* std::string customPage = LoadErrorPage(500, config);
-			if (!customPage.empty())
-			{
-				SetStatus(500, version, "Internal Server Error");
-				SetHeader("Content-Type", "text/html");
-				SetBody(customPage);
-			}
-			else */
-			SetResponseToError(500, version, "Internal Server Error", config);
-			return (ResponseToString());
-		}
-	}
 
 	std::string destination;
 	if (location.uploadStore == "/tmp")

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:20 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 18:33:34 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/04 13:26:58 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,6 @@ class HTTPResponse
 		bool IsFile(const std::string &path);
 		bool IsEndOfString(const std::string &str, const std::string &endpart);
 		std::string buildAutoIndexPage(const std::string &path, const std::string &uri);
-		const LocationConfig& FindMostMatchingLocation(const ServerConfig &serverConfig, const std::string &requestPath);
 		bool IsMethodAllowed(const LocationConfig &location, const std::string &method, const std::string &path);
 		
 		// Method handlers
@@ -74,5 +73,7 @@ class HTTPResponse
 		std::map<std::string, std::string> GetHeaders() const;
 		std::string GetBody() const;
 		void RemoveHeader(const std::string &key);
-};
-#endif
+	};
+	
+	const LocationConfig& FindMostMatchingLocation(const ServerConfig &serverConfig, const std::string &requestPath);
+	#endif
