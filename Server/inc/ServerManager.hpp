@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:08:58 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 13:12:01 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:04:11 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,11 @@
 
 #define MAX_EVENTS 64 // Maximum number of poll events
 
+struct CGIState {
+    time_t start_time;
+    pid_t pid;
+};
+
 class ServerManager
 {
 	private:
@@ -41,6 +46,7 @@ class ServerManager
 		std::map<int, int> _cgiToClient;      // CGI fd → client fd
 		std::map<int, std::string> _cgiBuffers; // CGI fd → partial output
 		std::set<int> _cgiFDs; 
+		std::map<int, CGIState> _cgiState;
 		// initialization methods
 		void InitServers(const std::vector<ServerConfig>& serverConfigs);
 		void InitEpoll();
@@ -63,7 +69,6 @@ class ServerManager
 		bool IsCGIRequest(const HTTPRequest &req, const ServerConfig &config, LocationConfig &loc);
 		// Server operations
 		void RunLoop(); // Main event loop
-		void RunLoopStep();
 		void ShutdownServers(); // Shutdown all servers
 };
 

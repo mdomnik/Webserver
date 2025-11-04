@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 15:30:22 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:41:51 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,7 @@ void ServerManager::HandleNewConnections(int listening, Server &server)
 		// Map client fd to its appropriate server
 		_clientToServer[client_fd] = &server;
 		_clientParsers[client_fd] = HTTPRequest();
-		// _clientLastActivity[client_fd] = std::time(NULL);
+		_clientLastActivity[client_fd] = std::time(NULL);
 
 		// Add client socket to epoll monitoring
 		struct epoll_event event;
@@ -142,7 +142,7 @@ void ServerManager::HandleNewConnections(int listening, Server &server)
 			close(client_fd);
 			_clientToServer.erase(client_fd);
 			_clientParsers.erase(client_fd);
-			// _clientLastActivity.erase(client_fd);
+			_clientLastActivity.erase(client_fd);
 			continue;
 		}
 
@@ -176,6 +176,12 @@ void ServerManager::HandleClientActivity(int client_fd)
     	_cgiToClient[cgi_fd] = client_fd;
     	_cgiFDs.insert(cgi_fd);
 		
+		CGIState state;
+		state.start_time = time(NULL);
+		state.pid = cgi.GetCGIPid();
+		_cgiState[cgi_fd] = state;
+
+		_clientLastActivity[client_fd] = std::time(NULL);
     	struct epoll_event ev;
     	memset(&ev, 0, sizeof(ev));
     	ev.events = EPOLLIN | EPOLLHUP | EPOLLERR;
@@ -189,6 +195,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 
 	if (status == Incomplete)
 	{
+		_clientLastActivity[client_fd] = std::time(NULL);
 		return; // wait for more data
 	}
 	if (status == NotImplemented) {
@@ -196,6 +203,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 		error.SetResponseToError(405, "HTTP/1.1", "Method Not allowed", _clientToServer[client_fd]->GetServerConfig());
 		std::string notimplresponse = error.ResponseToString();
 		send(client_fd, notimplresponse.c_str(), notimplresponse.size(), 0);
+		_clientLastActivity[client_fd] = std::time(NULL);
 		CloseClient(client_fd);
 		return;
 	}
@@ -207,6 +215,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 		error.SetResponseToError(400, "HTTP/1.1", "Bad Request", _clientToServer[client_fd]->GetServerConfig());
 		std::string badresponse = error.ResponseToString();
 		send(client_fd, badresponse.c_str(), badresponse.size(), 0);
+		_clientLastActivity[client_fd] = std::time(NULL);
 		CloseClient(client_fd);
 		return;
 	}
@@ -217,6 +226,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 		error.SetResponseToError(413, "HTTP/1.1", "Payload too large", _clientToServer[client_fd]->GetServerConfig());
 		std::string payload = error.ResponseToString();
 		send(client_fd, payload.c_str(), payload.size(), 0);
+		_clientLastActivity[client_fd] = std::time(NULL);
 		CloseClient(client_fd);
 		return;
 	}
@@ -236,7 +246,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 	// if (parser.IsKeepAlive())
 	// {
 	parser.ResetRequest();
-	// _clientLastActivity[client_fd] = std::time(NULL);
+	_clientLastActivity[client_fd] = std::time(NULL);
 	// std::cout << "Server Manager | Keep-Alive active for client fd: " << client_fd << std::endl;
 	// }
 	// else
@@ -256,8 +266,8 @@ void ServerManager::CloseClient(int client_fd)
 		_clientToServer.erase(client_fd);
 	if (_clientParsers.find(client_fd) != _clientParsers.end())
 		_clientParsers.erase(client_fd);
-	// if (_clientLastActivity.find(client_fd) != _clientLastActivity.end())
-		// _clientLastActivity.erase(client_fd);
+	if (_clientLastActivity.find(client_fd) != _clientLastActivity.end())
+		_clientLastActivity.erase(client_fd);
 
 
 	std::cout << "Server Manager | Closed connection for client fd: " << client_fd << std::endl;
@@ -278,7 +288,6 @@ void ServerManager::HandleCGIOutput(int cgi_fd, uint32_t events)
         _cgiFDs.erase(cgi_fd);
         return;
     }
-	std::cout << "EPOLLIN triggered for CGI fd: " << cgi_fd << std::endl;
 
     char buffer[4096];
     ssize_t n = read(cgi_fd, buffer, sizeof(buffer));
@@ -289,11 +298,26 @@ void ServerManager::HandleCGIOutput(int cgi_fd, uint32_t events)
     else if (n == 0 || (events & EPOLLHUP))
     {
         // 🔹 CGI finished — send output to client
+		
         int client_fd = _cgiToClient[cgi_fd];
         std::string &cgiOutput = _cgiBuffers[cgi_fd];
-        HTTPResponse response;
-        std::string httpResponse = response.ResponseFromCGI(cgiOutput, "HTTP/1.1");
-
+		
+		HTTPResponse response;
+		std::string httpResponse;
+			
+		// No output or invalid header? Treat as 500
+		if (cgiOutput.empty() || cgiOutput.find("Content-Type") == std::string::npos)
+		{
+		    std::cerr << "CGI returned no valid output, treating as 500 Internal Server Error\n";
+		    response.SetResponseToError(500, "HTTP/1.1", "Internal Server Error",
+		                                _clientToServer[client_fd]->GetServerConfig());
+		    httpResponse = response.ResponseToString();
+		}
+		else
+		{
+		    httpResponse = response.ResponseFromCGI(cgiOutput, "HTTP/1.1");
+		}
+		
         // Send full response to the client
         ssize_t sent = send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
         if (sent == -1)
@@ -305,7 +329,7 @@ void ServerManager::HandleCGIOutput(int cgi_fd, uint32_t events)
         _cgiFDs.erase(cgi_fd);
         _cgiToClient.erase(cgi_fd);
         _cgiBuffers.erase(cgi_fd);
-
+		_cgiState.erase(cgi_fd);
         CloseClient(client_fd);
     }
 }
@@ -404,7 +428,40 @@ void ServerManager::ShutdownServers()
 void ServerManager::CheckTimeouts()
 {
     time_t now = std::time(NULL);
+	const int CGI_TIMEOUT = 5;
     std::vector<int> toClose;
+	std::map<int, CGIState>::iterator it = _cgiState.begin();
+	while (it != _cgiState.end())
+	{
+	    int fd = it->first;
+	    CGIState state = it->second;
+	    ++it; // increment early because we may erase below
+	
+	    if (now - state.start_time > CGI_TIMEOUT)
+	    {
+	        std::cerr << "CGI timeout on fd " << fd << ", killing PID " << state.pid << std::endl;
+	        kill(state.pid, SIGKILL);
+	        waitpid(state.pid, NULL, 0);
+		
+	        int client_fd = _cgiToClient[fd];
+		
+	        // Build timeout response
+	        HTTPResponse timeoutResp;
+	        timeoutResp.SetResponseToError(504, "HTTP/1.1", "Gateway Timeout",
+	                                       _clientToServer[client_fd]->GetServerConfig());
+	        std::string response = timeoutResp.ResponseToString();
+	        send(client_fd, response.c_str(), response.size(), 0);
+			
+	        // Clean up everything
+	        epoll_ctl(_epollFD, EPOLL_CTL_DEL, fd, NULL);
+	        close(fd);
+	        _cgiFDs.erase(fd);
+	        _cgiToClient.erase(fd);
+	        _cgiBuffers.erase(fd);
+	        _cgiState.erase(fd);
+	        CloseClient(client_fd);
+	    }
+	}
 
     for (std::map<int, time_t>::iterator it = _clientLastActivity.begin(); it != _clientLastActivity.end(); ++it)
     {
