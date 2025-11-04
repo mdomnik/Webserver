@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 14:08:58 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 15:04:11 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:58:55 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@
 struct CGIState {
     time_t start_time;
     pid_t pid;
+	time_t timeoutLimit;
 };
 
 class ServerManager

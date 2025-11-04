@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 15:41:51 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/04 16:19:51 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,6 +170,16 @@ void ServerManager::HandleClientActivity(int client_fd)
 	ParseStatus status = parser.ParseRequestChunk(chunk);
 	LocationConfig location;
 	if (IsCGIRequest(parser, _clientToServer[client_fd]->GetServerConfig(), location)) {
+		std::cout << YELLOW << "Fullpath for CGI: " << location.fullpath << ESCAPE << std::endl;
+		HTTPResponse reeee;
+		if (reeee.IsFile(location.fullpath) == false) {
+			HTTPResponse error;
+			error.SetResponseToError(404, "HTTP/1.1", "Not Found", _clientToServer[client_fd]->GetServerConfig());
+			std::string notfoundresponse = error.ResponseToString();
+			send(client_fd, notfoundresponse.c_str(), notfoundresponse.size(), 0);
+			CloseClient(client_fd);
+			return;
+		}
     	CGIHandler cgi(location.fullpath, parser, location);
     	int cgi_fd = cgi.StartCGI(); // returns non-blocking parent socket
 		
@@ -179,6 +189,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 		CGIState state;
 		state.start_time = time(NULL);
 		state.pid = cgi.GetCGIPid();
+		state.timeoutLimit = _clientToServer[client_fd]->GetServerConfig().cgiTimeout;
 		_cgiState[cgi_fd] = state;
 
 		_clientLastActivity[client_fd] = std::time(NULL);
@@ -306,18 +317,19 @@ void ServerManager::HandleCGIOutput(int cgi_fd, uint32_t events)
 		std::string httpResponse;
 			
 		// No output or invalid header? Treat as 500
-		if (cgiOutput.empty() || cgiOutput.find("Content-Type") == std::string::npos)
+		if (cgiOutput.find("Content-Type") == std::string::npos)
 		{
 		    std::cerr << "CGI returned no valid output, treating as 500 Internal Server Error\n";
 		    response.SetResponseToError(500, "HTTP/1.1", "Internal Server Error",
 		                                _clientToServer[client_fd]->GetServerConfig());
 		    httpResponse = response.ResponseToString();
-		}
+		} 
 		else
 		{
 		    httpResponse = response.ResponseFromCGI(cgiOutput, "HTTP/1.1");
 		}
 		
+		std::cout << client_fd << " | CGI output:\n" << httpResponse << std::endl;
         // Send full response to the client
         ssize_t sent = send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
         if (sent == -1)
@@ -428,7 +440,7 @@ void ServerManager::ShutdownServers()
 void ServerManager::CheckTimeouts()
 {
     time_t now = std::time(NULL);
-	const int CGI_TIMEOUT = 5;
+	// const int CGI_TIMEOUT = 5;
     std::vector<int> toClose;
 	std::map<int, CGIState>::iterator it = _cgiState.begin();
 	while (it != _cgiState.end())
@@ -437,7 +449,7 @@ void ServerManager::CheckTimeouts()
 	    CGIState state = it->second;
 	    ++it; // increment early because we may erase below
 	
-	    if (now - state.start_time > CGI_TIMEOUT)
+	    if (now - state.start_time > state.timeoutLimit)
 	    {
 	        std::cerr << "CGI timeout on fd " << fd << ", killing PID " << state.pid << std::endl;
 	        kill(state.pid, SIGKILL);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseUtils.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:17:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 15:43:01 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/04 16:18:22 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -320,6 +320,7 @@ std::string HTTPResponse::ResponseFromCGI(const std::string &out, const std::str
 	SetStatus(status, httpversion, statusText);
 	SetBody(bodyPart);
 
+	std::cout << GREEN << "CGI Response Generated Successfully: " << ResponseToString() << ESCAPE << std::endl;
 	return ResponseToString();
 }
 

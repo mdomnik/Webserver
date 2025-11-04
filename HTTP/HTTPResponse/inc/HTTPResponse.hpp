@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:20 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 14:44:41 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 16:07:04 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@ class HTTPResponse
 		// utility methods
 		std::string GetFileType(const std::string &path);
 		bool IsDirectory(const std::string &path);
-		bool IsFile(const std::string &path);
 		bool IsEndOfString(const std::string &str, const std::string &endpart);
 		std::string buildAutoIndexPage(const std::string &path, const std::string &uri);
 		bool IsMethodAllowed(const LocationConfig &location, const std::string &method, const std::string &path);
@@ -67,6 +66,7 @@ class HTTPResponse
 		std::string GenerateResponse(const HTTPRequest &request, const ServerConfig &config);
 		std::string ResponseToString() const;
 		void SetResponseToError(int code, const std::string &version, const std::string &reason, const ServerConfig& config);
+		bool IsFile(const std::string &path);
 		
 		// Getters
 		std::string GetStatus() const;
