@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 16:28:34 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/04 16:45:25 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,42 +168,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 	// Parse the HTTP request chunk
 	HTTPRequest& parser = _clientParsers[client_fd];
 	ParseStatus status = parser.ParseRequestChunk(chunk);
-	LocationConfig location;
-	if (IsCGIRequest(parser, _clientToServer[client_fd]->GetServerConfig(), location)) {
-		std::cout << YELLOW << "Fullpath for CGI: " << location.fullpath << ESCAPE << std::endl;
-		HTTPResponse reeee;
-		if (reeee.IsFile(location.fullpath) == false) {
-			HTTPResponse error;
-			error.SetResponseToError(404, "HTTP/1.1", "Not Found", _clientToServer[client_fd]->GetServerConfig());
-			std::string notfoundresponse = error.ResponseToString();
-			send(client_fd, notfoundresponse.c_str(), notfoundresponse.size(), 0);
-			CloseClient(client_fd);
-			return;
-		}
-    	CGIHandler cgi(location.fullpath, parser, location);
-    	int cgi_fd = cgi.StartCGI(); // returns non-blocking parent socket
-		
-    	_cgiToClient[cgi_fd] = client_fd;
-    	_cgiFDs.insert(cgi_fd);
-		
-		CGIState state;
-		state.start_time = time(NULL);
-		state.pid = cgi.GetCGIPid();
-		state.timeoutLimit = _clientToServer[client_fd]->GetServerConfig().cgiTimeout;
-		_cgiState[cgi_fd] = state;
-
-		_clientLastActivity[client_fd] = std::time(NULL);
-    	struct epoll_event ev;
-    	memset(&ev, 0, sizeof(ev));
-    	ev.events = EPOLLIN | EPOLLHUP | EPOLLERR;
-    	ev.data.fd = cgi_fd;
-		if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, cgi_fd, &ev) == -1)
-			throw std::runtime_error("Failed to add CGI fd to epoll");
-		
-    	// Don’t handle client_fd further until CGI output arrives
-    	return;
-	}
-
+	
 	if (status == Incomplete)
 	{
 		_clientLastActivity[client_fd] = std::time(NULL);
@@ -230,7 +195,7 @@ void ServerManager::HandleClientActivity(int client_fd)
 		CloseClient(client_fd);
 		return;
 	}
-
+	
 	if (parser.GetBody().size() > _clientToServer[client_fd]->GetServerConfig().clientMaxBodySize)
 	{
 		HTTPResponse error;
@@ -241,7 +206,42 @@ void ServerManager::HandleClientActivity(int client_fd)
 		CloseClient(client_fd);
 		return;
 	}
+	
+	LocationConfig location;
+	if (IsCGIRequest(parser, _clientToServer[client_fd]->GetServerConfig(), location)) {
+		std::cout << YELLOW << "Fullpath for CGI: " << location.fullpath << ESCAPE << std::endl;
+		HTTPResponse reeee;
+		if (reeee.IsFile(location.fullpath) == false) {
+			HTTPResponse error;
+			error.SetResponseToError(404, "HTTP/1.1", "Not Found", _clientToServer[client_fd]->GetServerConfig());
+			std::string notfoundresponse = error.ResponseToString();
+			send(client_fd, notfoundresponse.c_str(), notfoundresponse.size(), 0);
+			CloseClient(client_fd);
+			return;
+		}
+		CGIHandler cgi(location.fullpath, parser, location);
+		int cgi_fd = cgi.StartCGI(); // returns non-blocking parent socket
+		
+		_cgiToClient[cgi_fd] = client_fd;
+		_cgiFDs.insert(cgi_fd);
+		
+		CGIState state;
+		state.start_time = time(NULL);
+		state.pid = cgi.GetCGIPid();
+		state.timeoutLimit = _clientToServer[client_fd]->GetServerConfig().cgiTimeout;
+		_cgiState[cgi_fd] = state;
 
+		_clientLastActivity[client_fd] = std::time(NULL);
+		struct epoll_event ev;
+		memset(&ev, 0, sizeof(ev));
+		ev.events = EPOLLIN | EPOLLHUP | EPOLLERR;
+		ev.data.fd = cgi_fd;
+		if (epoll_ctl(_epollFD, EPOLL_CTL_ADD, cgi_fd, &ev) == -1)
+			throw std::runtime_error("Failed to add CGI fd to epoll");
+		
+		// Don’t handle client_fd further until CGI output arrives
+		return;
+	}
 	const ServerConfig &config = _clientToServer[client_fd]->GetServerConfig();
 	HTTPResponse response;
 	// bool keepAlive = parser.IsKeepAlive();
@@ -295,7 +295,7 @@ void ServerManager::HandleCGIOutput(int cgi_fd, uint32_t events)
 		send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
         // CGI process crashed or closed early
 		std::cout << "CGI crashed or closed early" << std::endl;
-		epoll_ctl(_epollFD, EPOLL_CTL_DEL, cgi_fd, NULL);
+		// epoll_ctl(_epollFD, EPOLL_CTL_DEL, cgi_fd, NULL);
         close(cgi_fd);
         _cgiFDs.erase(cgi_fd);
         _cgiToClient.erase(cgi_fd);
