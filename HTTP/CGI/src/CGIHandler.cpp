@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGIHandler.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 20:13:05 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 15:33:40 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:41:12 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,71 +137,70 @@ std::string CGIHandler::BuildEnvString(const std::string &key, const std::string
 
 int CGIHandler::StartCGI()
 {
-    int sv[2];
+	int sv[2];
 
-    // Create non-blocking bidirectional socketpair
-    if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0, sv) == -1)
-        throw std::runtime_error("CGI | Failed to create socketpair");
+	// Create non-blocking bidirectional socketpair
+	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0, sv) == -1)
+		throw std::runtime_error("CGI | Failed to create socketpair");
 
-    pid_t pid = fork();
-    if (pid < 0)
-        throw std::runtime_error("CGI | Failed to fork process");
+	pid_t pid = fork();
+	if (pid < 0)
+		throw std::runtime_error("CGI | Failed to fork process");
 
-    if (pid == 0)
-    {
-        // --- Child process (CGI script) ---
-        close(sv[0]); // Close parent end
+	if (pid == 0)
+	{
+		// --- Child process (CGI script) ---
+		close(sv[0]); // Close parent end
 
-        dup2(sv[1], STDIN_FILENO);
-        dup2(sv[1], STDOUT_FILENO);
+		dup2(sv[1], STDIN_FILENO);
+		dup2(sv[1], STDOUT_FILENO);
 		dup2(sv[1], STDERR_FILENO);
-        close(sv[1]);
+		close(sv[1]);
 
-        // Build environment
-        std::vector<std::string> envStrings;
-        for (std::map<std::string, std::string>::iterator it = _envVariables.begin();
-             it != _envVariables.end(); ++it)
-        {
-            envStrings.push_back(it->first + "=" + it->second);
-        }
+		// Build environment
+		std::vector<std::string> envStrings;
+		for (std::map<std::string, std::string>::iterator it = _envVariables.begin();
+			 it != _envVariables.end(); ++it)
+		{
+			envStrings.push_back(it->first + "=" + it->second);
+		}
 
-        std::vector<char*> envp;
-        for (size_t i = 0; i < envStrings.size(); ++i)
-            envp.push_back(const_cast<char*>(envStrings[i].c_str()));
-        envp.push_back(NULL);
+		std::vector<char*> envp;
+		for (size_t i = 0; i < envStrings.size(); ++i)
+			envp.push_back(const_cast<char*>(envStrings[i].c_str()));
+		envp.push_back(NULL);
 
-        // Build argv
-        char *argv[3];
-        argv[0] = const_cast<char*>(_cgiPath.c_str());   // interpreter, e.g. /usr/bin/python3
-        argv[1] = const_cast<char*>(_scriptPath.c_str()); // actual script path
-        argv[2] = NULL;
+		// Build argv
+		char *argv[3];
+		argv[0] = const_cast<char*>(_cgiPath.c_str());   // interpreter, e.g. /usr/bin/python3
+		argv[1] = const_cast<char*>(_scriptPath.c_str()); // actual script path
+		argv[2] = NULL;
 
-        execve(_cgiPath.c_str(), argv, &envp[0]);
-        perror("execve");
-        _exit(1);
-    }
+		execve(_cgiPath.c_str(), argv, &envp[0]);
+		perror("execve");
+		_exit(1);
+	}
 
-    // --- Parent process ---
-    close(sv[1]);     // close child end
-    _cgiPid = pid;    // store PID for later cleanup
+	// --- Parent process ---
+	close(sv[1]);	 // close child end
+	_cgiPid = pid;	// store PID for later cleanup
 
-    // --- Write POST data if any ---
+	// --- Write POST data if any ---
 	std::cerr << "Writing POST body (" << _requestBody.size() << " bytes)\n";
 
 	if (!_requestBody.empty()) {
-	    size_t total_written = 0;
-	    while (total_written < _requestBody.size()) {
-	        ssize_t n = write(sv[0], _requestBody.data() + total_written,
-	                          _requestBody.size() - total_written);
-	        if (n > 0) total_written += n;
-	        else if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-	            usleep(1000);
-	            continue;
-	        } else break;
-	    }
+		size_t total_written = 0;
+		while (total_written < _requestBody.size()) {
+			ssize_t n = write(sv[0], _requestBody.data() + total_written,
+							  _requestBody.size() - total_written);
+			if (n > 0) total_written += n;
+			else if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+				usleep(1000);
+				continue;
+			} else break;
+		}
 	}
-	// 🔥 Close write end, so CGI gets EOF on stdin
 	shutdown(sv[0], SHUT_WR);
 	
-    return sv[0]; // return non-blocking socket FD for epoll
+	return sv[0];
 }

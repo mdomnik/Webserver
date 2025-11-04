@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPResponseUtils.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:17:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 13:26:29 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:43:01 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,145 +195,141 @@ std::string HTTPResponse::buildAutoIndexPage(const std::string &Path, const std:
 // }
 std::string HTTPResponse::ResponseFromCGI(const std::string &out, const std::string &httpversion)
 {
-    // Split CGI output into headers and body
-    size_t pos = out.find(DOUBLECRLF);
-    size_t length = 4;
-    if (pos == std::string::npos)
-    {
-        pos = out.find("\n\n");
-        length = 2;
-    }
+	// Split CGI output into headers and body
+	size_t pos = out.find(DOUBLECRLF);
+	size_t length = 4;
+	if (pos == std::string::npos)
+	{
+		pos = out.find("\n\n");
+		length = 2;
+	}
 
-    std::string headerPart;
-    std::string bodyPart;
+	std::string headerPart;
+	std::string bodyPart;
 
-    if (pos == std::string::npos)
-    {
-        headerPart = "";
-        bodyPart = out;
-    }
-    else
-    {
-        headerPart = out.substr(0, pos);
-        bodyPart = out.substr(pos + length);
-    }
+	if (pos == std::string::npos)
+	{
+		headerPart = "";
+		bodyPart = out;
+	}
+	else
+	{
+		headerPart = out.substr(0, pos);
+		bodyPart = out.substr(pos + length);
+	}
 
-    // --- Defaults ---
-    int status = 200;
-    std::string statusText = "OK";
+	int status = 200;
+	std::string statusText = "OK";
 
-    // --- Parse CGI headers ---
-    size_t i = 0;
-    std::map<std::string, std::string> cgiHeaders;
+	size_t i = 0;
+	std::map<std::string, std::string> cgiHeaders;
 
-    while (i < headerPart.size())
-    {
-        size_t end = headerPart.find(CRLF, i);
-        size_t forward = 2;
-        if (end == std::string::npos)
-        {
-            end = headerPart.find('\n', i);
-            forward = (end < headerPart.size()) ? 1 : 0;
-        }
+	while (i < headerPart.size())
+	{
+		size_t end = headerPart.find(CRLF, i);
+		size_t forward = 2;
+		if (end == std::string::npos)
+		{
+			end = headerPart.find('\n', i);
+			forward = (end < headerPart.size()) ? 1 : 0;
+		}
 
-        std::string line = headerPart.substr(i, end - i);
-        i = (end < headerPart.size()) ? end + forward : headerPart.size();
+		std::string line = headerPart.substr(i, end - i);
+		i = (end < headerPart.size()) ? end + forward : headerPart.size();
 
-        if (line.empty())
-            continue;
+		if (line.empty())
+			continue;
 
-        // --- Handle Status: ---
-        if (line.size() > 7 && line.substr(0, 7) == "Status:")
-        {
-            std::string remain = line.substr(7);
-            size_t k = 0;
-            while (k < remain.size() && (remain[k] == ' ' || remain[k] == '\t'))
-                ++k;
-            remain = remain.substr(k);
+		// --- Handle Status: ---
+		if (line.size() > 7 && line.substr(0, 7) == "Status:")
+		{
+			std::string remain = line.substr(7);
+			size_t k = 0;
+			while (k < remain.size() && (remain[k] == ' ' || remain[k] == '\t'))
+				++k;
+			remain = remain.substr(k);
 
-            std::istringstream statusStream(remain);
-            int code = 0;
-            statusStream >> code;
-            if (code >= 100 && code <= 599)
-            {
-                status = code;
-                std::string after;
-                std::getline(statusStream, after);
-                if (!after.empty() && after[0] == ' ')
-                    after.erase(0, 1);
-                if (!after.empty())
-                    statusText = after;
-            }
-            continue;
-        }
+			std::istringstream statusStream(remain);
+			int code = 0;
+			statusStream >> code;
+			if (code >= 100 && code <= 599)
+			{
+				status = code;
+				std::string after;
+				std::getline(statusStream, after);
+				if (!after.empty() && after[0] == ' ')
+					after.erase(0, 1);
+				if (!after.empty())
+					statusText = after;
+			}
+			continue;
+		}
 
-        // --- Regular header ---
-        size_t colon = line.find(':');
-        if (colon == std::string::npos)
-            continue;
+		// --- Regular header ---
+		size_t colon = line.find(':');
+		if (colon == std::string::npos)
+			continue;
 
-        std::string key = line.substr(0, colon);
-        std::string value = line.substr(colon + 1);
+		std::string key = line.substr(0, colon);
+		std::string value = line.substr(colon + 1);
 
-        // Trim leading spaces from value
-        size_t z = 0;
-        while (z < value.size() && (value[z] == ' ' || value[z] == '\t'))
-            ++z;
-        value = value.substr(z);
+		// Trim leading spaces from value
+		size_t z = 0;
+		while (z < value.size() && (value[z] == ' ' || value[z] == '\t'))
+			++z;
+		value = value.substr(z);
 
-        if (!key.empty() && !value.empty())
-            cgiHeaders[key] = value;
-    }
+		if (!key.empty() && !value.empty())
+			cgiHeaders[key] = value;
+	}
 
-    // --- Decide on transfer mode ---
-    bool isChunked = false;
-    for (std::map<std::string, std::string>::iterator it = cgiHeaders.begin();
-         it != cgiHeaders.end(); ++it)
-    {
-        if (strcasecmp(it->first.c_str(), "Transfer-Encoding") == 0 &&
-            strcasecmp(it->second.c_str(), "chunked") == 0)
-        {
-            isChunked = true;
-            break;
-        }
-    }
+	// --- Decide on transfer mode ---
+	bool isChunked = false;
+	for (std::map<std::string, std::string>::iterator it = cgiHeaders.begin();
+		 it != cgiHeaders.end(); ++it)
+	{
+		if (strcasecmp(it->first.c_str(), "Transfer-Encoding") == 0 &&
+			strcasecmp(it->second.c_str(), "chunked") == 0)
+		{
+			isChunked = true;
+			break;
+		}
+	}
 
-    // --- Apply headers to response ---
-    for (std::map<std::string, std::string>::iterator it = cgiHeaders.begin();
-         it != cgiHeaders.end(); ++it)
-        SetHeader(it->first, it->second);
+	// --- Apply headers to response ---
+	for (std::map<std::string, std::string>::iterator it = cgiHeaders.begin();
+		 it != cgiHeaders.end(); ++it)
+		SetHeader(it->first, it->second);
 
-    // --- Add or skip Content-Length ---
-    if (!isChunked && cgiHeaders.find("Content-Length") == cgiHeaders.end())
-    {
-        std::ostringstream l;
-        l << bodyPart.size();
-        SetHeader("Content-Length", l.str());
-    }
+	// --- Add or skip Content-Length ---
+	if (!isChunked && cgiHeaders.find("Content-Length") == cgiHeaders.end())
+	{
+		std::ostringstream l;
+		l << bodyPart.size();
+		SetHeader("Content-Length", l.str());
+	}
 
-    // --- Ensure consistency ---
-    if (isChunked)
-    {
-        // Remove any existing Content-Length just in case
-        RemoveHeader("Content-Length");
-    }
+	// --- Ensure consistency ---
+	if (isChunked)
+	{
+		// Remove any existing Content-Length just in case
+		RemoveHeader("Content-Length");
+	}
 
-    // --- Finalize ---
-    SetStatus(status, httpversion, statusText);
-    SetBody(bodyPart);
+	// --- Finalize ---
+	SetStatus(status, httpversion, statusText);
+	SetBody(bodyPart);
 
-    return ResponseToString();
+	return ResponseToString();
 }
 
 
 
 bool HTTPResponse::IsMethodAllowed(const LocationConfig &location, const std::string &method, const std::string &path)
 {
-	// 🟢 1. Validate known methods
 	if (method != "GET" && method != "POST" && method != "DELETE")
 		return false;
 
-	// 🟢 2. If it's a CGI request, always allow GET and POST
 	if (!location.cgiExtension.empty()
 		&& path.size() >= location.cgiExtension.size()
 		&& path.substr(path.size() - location.cgiExtension.size()) == location.cgiExtension)
@@ -342,11 +338,9 @@ bool HTTPResponse::IsMethodAllowed(const LocationConfig &location, const std::st
 			return true;
 	}
 
-	// 🟢 3. If location has no restrictions, allow all
 	if (location.methods.empty())
 		return true;
 
-	// 🟢 4. Normal method checking
 	for (size_t i = 0; i < location.methods.size(); ++i)
 	{
 		if (location.methods[i] == method)
@@ -356,7 +350,7 @@ bool HTTPResponse::IsMethodAllowed(const LocationConfig &location, const std::st
 }
 
  void HTTPResponse::RemoveHeader(const std::string &key) {
-    std::map<std::string, std::string>::iterator it = _headers.find(key);
-    if (it != _headers.end())
-        _headers.erase(it);
+	std::map<std::string, std::string>::iterator it = _headers.find(key);
+	if (it != _headers.end())
+		_headers.erase(it);
 }

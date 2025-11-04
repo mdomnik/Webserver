@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/29 13:21:23 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 14:14:04 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:42:09 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,45 +87,45 @@ std::string HTTPRequest::GetHeader(const std::string& key) const
 
 bool HTTPRequest::HasHeader(const std::string& key) const
 {
-    std::string lower = key;
-    for (size_t i = 0; i < lower.size(); ++i)
-        lower[i] = std::tolower(static_cast<unsigned char>(lower[i]));
+	std::string lower = key;
+	for (size_t i = 0; i < lower.size(); ++i)
+		lower[i] = std::tolower(static_cast<unsigned char>(lower[i]));
 
-    return _headers.find(lower) != _headers.end();
+	return _headers.find(lower) != _headers.end();
 }
 
 bool HTTPRequest::IsKeepAlive() const
 {
-    // Default: HTTP/1.1 = keep-alive unless stated otherwise
-    if (_httpVersion == "HTTP/1.1")
-    {
-        std::map<std::string, std::string>::const_iterator it = _headers.find("connection");
-        if (it != _headers.end())
-        {
-            std::string val = it->second;
-            for (size_t i = 0; i < val.size(); ++i)
-                val[i] = std::tolower(static_cast<unsigned char>(val[i]));
-            if (val == "close")
-                return false;
-        }
-        return true; // implicit keep-alive
-    }
+	// Default: HTTP/1.1 = keep-alive unless stated otherwise
+	if (_httpVersion == "HTTP/1.1")
+	{
+		std::map<std::string, std::string>::const_iterator it = _headers.find("connection");
+		if (it != _headers.end())
+		{
+			std::string val = it->second;
+			for (size_t i = 0; i < val.size(); ++i)
+				val[i] = std::tolower(static_cast<unsigned char>(val[i]));
+			if (val == "close")
+				return false;
+		}
+		return true; // implicit keep-alive
+	}
 
-    // For HTTP/1.0, keep-alive only if explicitly stated
-    if (_httpVersion == "HTTP/1.0")
-    {
-        std::map<std::string, std::string>::const_iterator it = _headers.find("connection");
-        if (it != _headers.end())
-        {
-            std::string val = it->second;
-            for (size_t i = 0; i < val.size(); ++i)
-                val[i] = std::tolower(static_cast<unsigned char>(val[i]));
-            if (val == "keep-alive")
-                return true;
-        }
-    }
+	// For HTTP/1.0, keep-alive only if explicitly stated
+	if (_httpVersion == "HTTP/1.0")
+	{
+		std::map<std::string, std::string>::const_iterator it = _headers.find("connection");
+		if (it != _headers.end())
+		{
+			std::string val = it->second;
+			for (size_t i = 0; i < val.size(); ++i)
+				val[i] = std::tolower(static_cast<unsigned char>(val[i]));
+			if (val == "keep-alive")
+				return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 
@@ -450,87 +450,87 @@ ParseStatus HTTPRequest::ParseBody()
 
 ParseStatus HTTPRequest::ParseChunkedBody()
 {
-    // Try to decode as much as possible from _buffer.
-    size_t pos = 0;
+	// Try to decode as much as possible from _buffer.
+	size_t pos = 0;
 
-    while (true)
-    {
-        // Find CRLF marking end of chunk-size line
-        size_t endOfSize = _buffer.find(CRLF, pos);
+	while (true)
+	{
+		// Find CRLF marking end of chunk-size line
+		size_t endOfSize = _buffer.find(CRLF, pos);
 		std::cout << BLUE << "endofsize: " << endOfSize << BLUE << std::endl;
-        if (endOfSize == std::string::npos)
-            return Incomplete; // need more data
+		if (endOfSize == std::string::npos)
+			return Incomplete; // need more data
 
-        // Extract size line
-        std::string sizeLine = _buffer.substr(pos, endOfSize - pos);
-        size_t semi = sizeLine.find(';');
-        if (semi != std::string::npos)
-            sizeLine = sizeLine.substr(0, semi);
+		// Extract size line
+		std::string sizeLine = _buffer.substr(pos, endOfSize - pos);
+		size_t semi = sizeLine.find(';');
+		if (semi != std::string::npos)
+			sizeLine = sizeLine.substr(0, semi);
 
-        // Trim spaces
-        while (!sizeLine.empty() && std::isspace(sizeLine[0]))
-            sizeLine.erase(sizeLine.begin());
-        while (!sizeLine.empty() && std::isspace(sizeLine[sizeLine.size() - 1]))
-            sizeLine.erase(sizeLine.end() - 1);
+		// Trim spaces
+		while (!sizeLine.empty() && std::isspace(sizeLine[0]))
+			sizeLine.erase(sizeLine.begin());
+		while (!sizeLine.empty() && std::isspace(sizeLine[sizeLine.size() - 1]))
+			sizeLine.erase(sizeLine.end() - 1);
 
-        if (sizeLine.empty())
-        {
-            _errorMessage = "Invalid chunk size line";
-            _state = ErrorState;
-            return BadRequest;
-        }
+		if (sizeLine.empty())
+		{
+			_errorMessage = "Invalid chunk size line";
+			_state = ErrorState;
+			return BadRequest;
+		}
 
-        // Convert from hex
-        size_t chunkSize = 0;
-        std::stringstream ss;
-        ss << std::hex << sizeLine;
-        ss >> chunkSize;
+		// Convert from hex
+		size_t chunkSize = 0;
+		std::stringstream ss;
+		ss << std::hex << sizeLine;
+		ss >> chunkSize;
 
-        // Move buffer past the size line + CRLF
-        pos = endOfSize + 2;
+		// Move buffer past the size line + CRLF
+		pos = endOfSize + 2;
 
-        // Check for final chunk (size = 0)
-        if (chunkSize == 0)
-        {
-            // Wait for final CRLF or optional trailers
-            size_t trailerEnd = _buffer.find(DOUBLECRLF, pos);
-            if (trailerEnd == std::string::npos)
-            {
-                // Some clients just send one CRLF
-                size_t singleEnd = _buffer.find(CRLF, pos);
-                if (singleEnd == std::string::npos)
-                    return Incomplete; // wait for end
-                _buffer.erase(0, singleEnd + 2);
-            }
-            else
-                _buffer.erase(0, trailerEnd + 4);
+		// Check for final chunk (size = 0)
+		if (chunkSize == 0)
+		{
+			// Wait for final CRLF or optional trailers
+			size_t trailerEnd = _buffer.find(DOUBLECRLF, pos);
+			if (trailerEnd == std::string::npos)
+			{
+				// Some clients just send one CRLF
+				size_t singleEnd = _buffer.find(CRLF, pos);
+				if (singleEnd == std::string::npos)
+					return Incomplete; // wait for end
+				_buffer.erase(0, singleEnd + 2);
+			}
+			else
+				_buffer.erase(0, trailerEnd + 4);
 
-            _state = DoneState;
-            return Success;
-        }
+			_state = DoneState;
+			return Success;
+		}
 
-        // Make sure the whole chunk data + CRLF is in buffer
-        if (_buffer.size() < pos + chunkSize + 2)
-            return Incomplete;
+		// Make sure the whole chunk data + CRLF is in buffer
+		if (_buffer.size() < pos + chunkSize + 2)
+			return Incomplete;
 
-        // Append this chunk to body
-        _body.append(_buffer, pos, chunkSize);
+		// Append this chunk to body
+		_body.append(_buffer, pos, chunkSize);
 
-        // if (_body.size() > _maxBodySize)
-        // {
-        //     _errorMessage = "Body size exceeds maximum allowed";
-        //     _state = ErrorState;
-        //     return PayloadExceeded;
-        // }
+		// if (_body.size() > _maxBodySize)
+		// {
+		//	 _errorMessage = "Body size exceeds maximum allowed";
+		//	 _state = ErrorState;
+		//	 return PayloadExceeded;
+		// }
 		// std::cout << "current body size: " << _body.size() << std::endl;
-        // Remove this chunk + CRLF from buffer
-        _buffer.erase(0, pos + chunkSize + 2);
+		// Remove this chunk + CRLF from buffer
+		_buffer.erase(0, pos + chunkSize + 2);
 
-        // Reset pos for next loop
-        pos = 0;
-    }
+		// Reset pos for next loop
+		pos = 0;
+	}
 
-    return Success;
+	return (Success);
 }
 
 
