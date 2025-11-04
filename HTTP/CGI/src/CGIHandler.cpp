@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 20:13:05 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 13:55:50 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 14:50:44 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,37 +285,23 @@ int CGIHandler::StartCGI()
     _cgiPid = pid;    // store PID for later cleanup
 
     // --- Write POST data if any ---
-    if (!_requestBody.empty())
-    {
-        size_t total_written = 0;
-        while (total_written < _requestBody.size())
-        {
-            ssize_t n = write(sv[0], _requestBody.data() + total_written,
-                              _requestBody.size() - total_written);
-            if (n > 0)
-            {
-                total_written += n;
-            }
-            else if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK))
-            {
-				usleep(1000);
-				continue;
-            }
-            else
-            {
-                perror("CGI | write request body");
-                break;
-            }
-        }
+	std::cerr << "Writing POST body (" << _requestBody.size() << " bytes)\n";
 
-        // Optional: if partial write occurred, you can track remaining data
-        if (total_written < _requestBody.size()) {
-            _remainingBody = _requestBody.substr(total_written);
-        } else {
-            _remainingBody.clear();
-        }
-    }
-
+	if (!_requestBody.empty()) {
+	    size_t total_written = 0;
+	    while (total_written < _requestBody.size()) {
+	        ssize_t n = write(sv[0], _requestBody.data() + total_written,
+	                          _requestBody.size() - total_written);
+	        if (n > 0) total_written += n;
+	        else if (n == -1 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+	            usleep(1000);
+	            continue;
+	        } else break;
+	    }
+	}
+	// 🔥 Close write end, so CGI gets EOF on stdin
+	shutdown(sv[0], SHUT_WR);
+	
     return sv[0]; // return non-blocking socket FD for epoll
 }
 

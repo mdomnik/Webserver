@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 13:57:56 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 14:49:46 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -265,15 +265,15 @@ void ServerManager::CloseClient(int client_fd)
 
 void ServerManager::HandleCGIOutput(int cgi_fd, uint32_t events)
 {
-    if (events & (EPOLLHUP | EPOLLERR))
+    if (events & EPOLLERR)
     {
         // CGI process crashed or closed early
-        epoll_ctl(_epollFD, EPOLL_CTL_DEL, cgi_fd, NULL);
+		std::cout << "CGI crashed or closed early" << std::endl;
         close(cgi_fd);
         _cgiFDs.erase(cgi_fd);
-		_cgiToClient.erase(cgi_fd);
         return;
     }
+	std::cout << "EPOLLIN triggered for CGI fd: " << cgi_fd << std::endl;
 
     char buffer[4096];
     ssize_t n = read(cgi_fd, buffer, sizeof(buffer));
@@ -281,13 +281,18 @@ void ServerManager::HandleCGIOutput(int cgi_fd, uint32_t events)
     {
         _cgiBuffers[cgi_fd].append(buffer, n);
     }
-    else if (n == 0)
+    else if (n == 0 || (events & EPOLLHUP))
     {
         // 🔹 CGI finished — send output to client
         int client_fd = _cgiToClient[cgi_fd];
         std::string &cgiOutput = _cgiBuffers[cgi_fd];
+        HTTPResponse response;
+        std::string httpResponse = response.ResponseFromCGI(cgiOutput, "HTTP/1.1");
 
-        send(client_fd, cgiOutput.c_str(), cgiOutput.size(), 0);
+        // Send full response to the client
+        ssize_t sent = send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
+        if (sent == -1)
+            perror("send CGI response");
 
         // Cleanup
         epoll_ctl(_epollFD, EPOLL_CTL_DEL, cgi_fd, NULL);

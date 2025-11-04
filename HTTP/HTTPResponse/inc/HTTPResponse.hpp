@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 15:11:20 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 13:26:58 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 14:44:41 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,13 +52,13 @@ class HTTPResponse
 		std::string HandlePOST(const HTTPRequest &req, const ServerConfig &conf);
 		std::string HandleDELETE(const HTTPRequest &req, const ServerConfig &conf);
 		
-		std::string ResponseFromCGI(const std::string &cgiOutput, const std::string &httpVersion);
 		std::string LoadErrorPage(int statusCode, const ServerConfig &config);
 		
 		public:
 		// Constructor
 		HTTPResponse();
 		
+		std::string ResponseFromCGI(const std::string &cgiOutput, const std::string &httpVersion);
 		//setters
 		void SetStatus(int statusCode, const std::string &httpVersion, const std::string &reason);
 		void SetHeader(const std::string &key, const std::string &value);
