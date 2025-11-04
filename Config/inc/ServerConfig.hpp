@@ -6,7 +6,7 @@
 /*   By: mdomnik <mdomnik@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:14:38 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 15:40:18 by mdomnik          ###   ########.fr       */
+/*   Updated: 2025/11/04 15:46:30 by mdomnik          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,9 @@ struct ServerConfig
 	std::string serverName; //Default name of the server
 		
 	std::vector<std::pair<std::string, int> > listens; //ip:port pairs on which we can access the server
-	size_t clientMaxBodySize; // Maximum amount of connections per socket
-	size_t _keepAliveTimeout;
+    size_t clientMaxBodySize; // Maximum amount of connections per socket
+    size_t _keepAliveTimeout;
+	size_t cgiTimeout;
 	
 	std::map<int, std::string> errorPages; // direction to error pages
 		
