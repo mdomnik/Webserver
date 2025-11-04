@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 20:13:05 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 14:53:16 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:33:40 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,9 @@ std::string decodeChunkedBody(const std::string &raw)
 	}
 	return decoded;
 }
-
+pid_t	CGIHandler::GetCGIPid(){
+	return _cgiPid;
+}
 
 // ==== Constructor and Destructor ====
 CGIHandler::CGIHandler(const std::string &scriptPath, const HTTPRequest &request, const LocationConfig &location)
@@ -152,6 +154,7 @@ int CGIHandler::StartCGI()
 
         dup2(sv[1], STDIN_FILENO);
         dup2(sv[1], STDOUT_FILENO);
+		dup2(sv[1], STDERR_FILENO);
         close(sv[1]);
 
         // Build environment

@@ -6,7 +6,7 @@
 /*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/30 20:13:07 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 13:08:29 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:17:46 by fjoestin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ class CGIHandler
 		public:
 		CGIHandler(const std::string &scriptPath, const HTTPRequest &request, const LocationConfig &location);
 		~CGIHandler();
-		
+		pid_t GetCGIPid();
 		int StartCGI();
 		std::string Execute(int& has_failed);
 };
