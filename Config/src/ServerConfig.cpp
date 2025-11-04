@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:31:18 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 08:04:03 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:10:12 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ LocationConfig::LocationConfig() : autoIndex(true), uploadEnable(false)
 }
 
 // Default constructor for server blocks
-ServerConfig::ServerConfig() : serverName("Default") ,clientMaxBodySize(100000000), _keepAliveTimeout(10)
+ServerConfig::ServerConfig() : serverName("Default") ,clientMaxBodySize(100000000), _keepAliveTimeout(10), cgiTimeout(0)
 {
 	errorPages[404] = "/errors/404.html";
 }

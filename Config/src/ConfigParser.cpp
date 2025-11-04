@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:38:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/03 16:48:32 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:11:01 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,6 +163,10 @@ void ConfigParser::ParseServerParts(ServerConfig& server, const std::string& tok
 	else if (token == "client_max_body_size")
 	{
 		server.clientMaxBodySize = std::atoi(Next().c_str());
+		Expect(";");
+	}
+	else if (token == "timeout") {
+		server.cgiTimeout = std::atoi(Next().c_str());
 		Expect(";");
 	}
 	else if (token == "server_name")

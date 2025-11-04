@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>CGI Launcher</title>
+	<style>
+		body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; margin: 18px; color:#222; }
+		header { margin-bottom:12px; }
+		#buttons { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+		.cgi-btn { padding:8px 12px; border:1px solid #cfcfcf; background:#f7f7f7; border-radius:6px; cursor:pointer; }
+		.cgi-btn:hover{ background:#eef; }
+		#controls { margin-bottom:14px; display:flex; gap:8px; align-items:center; }
+		input[type="text"] { padding:8px; border-radius:6px; border:1px solid #ccc; min-width:300px; }
+		#outputPane { width:100%; height:60vh; border:1px solid #ddd; border-radius:6px; }
+		.note { color:#666; font-size:0.9rem; margin-top:6px; }
+	</style>
+</head>
+<body>
+	<header>
+		<h1>CGI Launcher</h1>
+		<div class="note">Buttons below will try to run CGI scripts and show output in the pane. If automatic listing fails, add a script path manually.</div>
+	</header>
+
+	<section id="controls">
+		<div id="buttons" aria-live="polite"></div>
+		<div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+			<input id="manualPath" type="text" placeholder="/cgi-bin/myscript.cgi or cgi-bin/myscript.pl" />
+			<button id="addBtn" class="cgi-btn">Add</button>
+			<button id="refreshBtn" class="cgi-btn">Refresh</button>
+		</div>
+	</section>
+
+	<iframe id="outputPane" title="CGI output"></iframe>
+
+	<script>
+		// Basic page that attempts to list /cgi-bin/ directory and create a button per script.
+		// Clicking a button loads the script into the iframe.
+		(function(){
+			const listUrl = '/cgi-bin/';
+			const buttonsEl = document.getElementById('buttons');
+			const iframe = document.getElementById('outputPane');
+			const manualInput = document.getElementById('manualPath');
+
+			document.getElementById('addBtn').addEventListener('click', () => {
+				const v = manualInput.value.trim();
+				if (!v) return;
+				createButton(v);
+				manualInput.value = '';
+			});
+
+			document.getElementById('refreshBtn').addEventListener('click', () => {
+				buttonsEl.innerHTML = '';
+				attemptFetch();
+			});
+
+			function createButton(path) {
+				// Normalize path to absolute when possible
+				let resolved;
+				try {
+					// If user entered absolute URL, keep it
+					resolved = new URL(path, window.location.href).href;
+				} catch(e) {
+					resolved = path;
+				}
+				const name = resolved.split('/').pop() || resolved;
+				const b = document.createElement('button');
+				b.className = 'cgi-btn';
+				b.textContent = name;
+				b.title = resolved;
+				b.addEventListener('click', () => {
+					// Load into iframe. Use GET.
+					iframe.src = resolved;
+				});
+				// Right-click to open in new tab
+				b.addEventListener('contextmenu', (ev) => {
+					ev.preventDefault();
+					window.open(resolved, '_blank');
+				});
+				buttonsEl.appendChild(b);
+			}
+
+			function attemptFetch(){
+				// Try to GET the cgi-bin index page and parse it for links.
+				fetch(listUrl, { method: 'GET' })
+					.then(r => r.text())
+					.then(text => parseListing(text))
+					.catch(() => {
+						// silently fail; user can add manually
+						const note = document.createElement('div');
+						note.className = 'note';
+						note.textContent = 'Automatic directory listing unavailable. Add script paths manually.';
+						buttonsEl.appendChild(note);
+					});
+			}
+
+			function parseListing(htmlText){
+				const parser = new DOMParser();
+				const doc = parser.parseFromString(htmlText, 'text/html');
+				const anchors = Array.from(doc.querySelectorAll('a'));
+				let found = 0;
+				anchors.forEach(a => {
+					let href = a.getAttribute('href');
+					if (!href) return;
+					// ignore parent directory links
+					if (href === '../' || href === '/') return;
+					// consider common CGI script extensions or executable entries
+					if (/(\.cgi|\.pl|\.py|\.sh|\.exe)$/.test(href) || /\/$/.test(href) || a.textContent.match(/cgi/i)) {
+						// resolve relative to listUrl
+						let resolved;
+						try { resolved = new URL(href, location.origin + listUrl).href; }
+						catch(e) { resolved = href; }
+						createButton(resolved);
+						found++;
+					}
+				});
+				if (!found){
+					const note = document.createElement('div');
+					note.className = 'note';
+					note.textContent = 'No CGI script links detected in ' + listUrl + '. Add paths manually if needed.';
+					buttonsEl.appendChild(note);
+				}
+			}
+
+			// initial attempt
+			attemptFetch();
+
+		})();
+	</script>
+</body>
+</html>

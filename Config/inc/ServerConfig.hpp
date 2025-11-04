@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfig.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 11:14:38 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 13:37:56 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:09:58 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ struct ServerConfig
 	std::vector<std::pair<std::string, int> > listens; //ip:port pairs on which we can access the server
     size_t clientMaxBodySize; // Maximum amount of connections per socket
     size_t _keepAliveTimeout;
+	size_t cgiTimeout;
 	
 	std::map<int, std::string> errorPages; // direction to error pages
     

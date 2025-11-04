@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fjoestin <fjoestin@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 14:49:46 by fjoestin         ###   ########.fr       */
+/*   Updated: 2025/11/04 15:30:22 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -267,6 +267,11 @@ void ServerManager::HandleCGIOutput(int cgi_fd, uint32_t events)
 {
     if (events & EPOLLERR)
     {
+		int client_fd = _cgiToClient[cgi_fd];
+		HTTPResponse response;
+		response.SetResponseToError(500, "HTTP/1.1", "Internal Server Error", _clientToServer[client_fd]->GetServerConfig());
+		std::string httpResponse = response.ResponseToString();
+		send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
         // CGI process crashed or closed early
 		std::cout << "CGI crashed or closed early" << std::endl;
         close(cgi_fd);
