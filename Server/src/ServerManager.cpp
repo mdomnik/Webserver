@@ -6,7 +6,7 @@
 /*   By: nmandakh <nmandakh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/28 15:49:44 by mdomnik           #+#    #+#             */
-/*   Updated: 2025/11/04 16:19:51 by nmandakh         ###   ########.fr       */
+/*   Updated: 2025/11/04 16:28:34 by nmandakh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -295,8 +295,13 @@ void ServerManager::HandleCGIOutput(int cgi_fd, uint32_t events)
 		send(client_fd, httpResponse.c_str(), httpResponse.size(), 0);
         // CGI process crashed or closed early
 		std::cout << "CGI crashed or closed early" << std::endl;
+		epoll_ctl(_epollFD, EPOLL_CTL_DEL, cgi_fd, NULL);
         close(cgi_fd);
         _cgiFDs.erase(cgi_fd);
+        _cgiToClient.erase(cgi_fd);
+        _cgiBuffers.erase(cgi_fd);
+		_cgiState.erase(cgi_fd);
+        CloseClient(client_fd);
         return;
     }
 
